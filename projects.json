@@ -101,7 +101,7 @@
     "blurb": "Answer arithmetic aloud or on the keypad and climb a ladder that adapts to you.",
     "url": "https://audiophrases.github.io/Multiplication-Game/",
     "image": "assets/covers/number-mania.webp",
-    "hidden": false
+    "hidden": true
   },
   {
     "id": "english-hub",
