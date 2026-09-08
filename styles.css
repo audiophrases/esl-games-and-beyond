@@ -94,20 +94,20 @@ footer { width: min(1180px, calc(100% - 3rem)); margin-inline: auto; }
 
 .grid-note { color: var(--muted); font-size: .9rem; }
 
+/* Nothing left down here but the way into admin mode. */
 footer {
   margin-top: 4rem;
-  padding: 2rem 0 3rem;
+  padding: 1.5rem 0 2.5rem;
   border-top: 1px solid var(--line);
   color: var(--muted);
-  font-size: .9rem;
+  font-size: .85rem;
 }
-footer p { margin: .25rem 0; }
-footer a, .admin-link { color: inherit; }
 
 .admin-link {
   background: none; border: 0; padding: 0;
-  font-size: inherit; text-decoration: underline; cursor: pointer;
+  color: inherit; font-size: inherit; text-decoration: underline; cursor: pointer;
 }
+.admin-link:hover { color: var(--ink); }
 
 .noscript { width: min(1180px, calc(100% - 3rem)); margin: 2rem auto; }
 
