@@ -6,11 +6,12 @@
    checks — Google itself is never contacted. */
 
 import { chromium } from 'playwright-core';
-import { readFile } from 'node:fs/promises';
 
 const edge = 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe';
 const baseUrl = process.env.BASE_URL || 'http://127.0.0.1:8080/';
-const catalog = JSON.parse(await readFile('projects.json', 'utf8'));
+// From the site under test, not from disk — a live BASE_URL can move under
+// us when someone publishes from admin mode.
+const catalog = await fetch(new URL('projects.json', baseUrl)).then(r => r.json());
 
 const browser = await chromium.launch({ executablePath: edge, headless: true });
 const page = await browser.newPage({ viewport: { width: 1440, height: 1000 }, reducedMotion: 'reduce' });

@@ -1,5 +1,5 @@
 import { chromium } from 'playwright-core';
-import { mkdir, readFile } from 'node:fs/promises';
+import { mkdir } from 'node:fs/promises';
 import path from 'node:path';
 
 const edge = 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe';
@@ -7,7 +7,9 @@ const baseUrl = process.env.BASE_URL || 'http://127.0.0.1:8080/';
 const out = path.resolve('artifacts');
 await mkdir(out, { recursive: true });
 
-const projects = JSON.parse(await readFile('projects.json', 'utf8'));
+// Read the catalog from the site under test, not from disk: against a live
+// BASE_URL the local file may be behind a publish made from admin mode.
+const projects = await fetch(new URL('projects.json', baseUrl)).then(r => r.json());
 const visible = projects.filter(project => !project.hidden).length;
 
 const browser = await chromium.launch({ executablePath: edge, headless: true });
