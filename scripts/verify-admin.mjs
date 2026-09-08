@@ -44,6 +44,7 @@ const cors = {
 let putBody = null;
 let putCount = 0;
 let putStatus = 200;
+let getStatus = 200;
 let seenAuth = null;
 
 await page.route('https://api.github.com/**', async route => {
@@ -51,7 +52,11 @@ await page.route('https://api.github.com/**', async route => {
   if (request.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: cors });
 
   if (request.method() === 'GET') {
-    return route.fulfill({ status: 200, headers: { ...cors, 'content-type': 'application/json' }, body: JSON.stringify({ sha: 'fakesha123' }) });
+    return route.fulfill({
+      status: getStatus,
+      headers: { ...cors, 'content-type': 'application/json' },
+      body: JSON.stringify(getStatus === 200 ? { sha: 'fakesha123' } : { message: 'Not Found' })
+    });
   }
 
   putCount += 1;
@@ -179,11 +184,28 @@ check('and it says how to recover', (await state()).includes('Publish again to e
 check('the refused token is forgotten', await page.evaluate(() => sessionStorage.getItem('eslGithubToken')) === null);
 check('the changes are still unpublished', !(await publishDisabled()));
 
+/* --- a token for the wrong repository ------------------------------------- */
+
+// This fails on the very first call, fetching the file's SHA, before any
+// commit is attempted — the likeliest real mistake and its own code path.
+console.log('\na token for the wrong repository');
+putStatus = 200;
+getStatus = 404;
+putCount = 0;
+await page.locator('#admin-publish').click();
+await page.locator('#token-dialog [data-field="token"]').fill('github_pat_otherrepo');
+await page.locator('#token-dialog [data-token="save"]').click();
+await page.waitForFunction(() => document.querySelector('#admin-state').textContent.includes('Publish again'));
+check('the wrong repository is named', (await state()).includes('cannot see audiophrases/esl-games-and-beyond'));
+check('it never tried to commit', putCount === 0, `saw ${putCount}`);
+check('that token is forgotten too', await page.evaluate(() => sessionStorage.getItem('eslGithubToken')) === null);
+
 /* --- a token GitHub accepts ----------------------------------------------- */
 
 console.log('\npublishing');
 provokingFailure = false;
 putStatus = 200;
+getStatus = 200;
 putCount = 0;
 await page.locator('#admin-publish').click();
 check('the token is asked for again', await page.locator('#token-dialog').evaluate(node => node.open));
@@ -216,6 +238,28 @@ await page.waitForSelector('.toast');
 check('a second publish does not ask for the token again', !(await page.locator('#token-dialog').evaluate(node => node.open)));
 check('the second commit was sent', putCount === 2, `saw ${putCount}`);
 check('the second commit carries the newly hidden card', JSON.parse(Buffer.from(putBody.content, 'base64').toString('utf8')).find(p => p.id === firstVisible)?.hidden === true);
+
+/* --- someone else published first ----------------------------------------- */
+
+// A conflict is the one refusal that is not the token's fault, so the token
+// must survive it — otherwise a second admin publishing would cost you yours.
+console.log('\nsomeone else published first');
+provokingFailure = true;
+putStatus = 409;
+await page.evaluate(() => document.querySelectorAll('.toast').forEach(node => node.remove()));
+await page.locator(`.card[data-id="${firstVisible}"] [data-admin="toggle"]`).click();
+await page.locator('#admin-publish').click();
+await page.waitForFunction(() => document.querySelector('#admin-state').textContent.includes('changed the catalog first'));
+check('a conflict says to reload', (await state()).includes('Reload the page'));
+check('the token is kept, it was not at fault', await page.evaluate(() => sessionStorage.getItem('eslGithubToken')) !== null);
+check('it does not offer another token', await page.locator('#token-dialog').count() === 0 || !(await page.locator('#token-dialog').evaluate(node => node.open)));
+check('the changes survive the conflict', !(await publishDisabled()));
+
+provokingFailure = false;
+putStatus = 200;
+await page.locator('#admin-publish').click();
+await page.waitForSelector('.toast');
+check('publishing works again once the conflict clears', await publishDisabled());
 
 /* --- leaving admin mode without signing out ------------------------------- */
 

@@ -76,7 +76,7 @@ npm run test:admin
 
 `npm run test:browser` drives the visitor's page in Microsoft Edge: desktop and phone layouts, and that hidden activities never reach the markup a visitor receives.
 
-`npm run test:admin` drives admin mode against a **mocked** GitHub API — it never reaches github.com and needs no token. It covers editing, hiding, showing, reordering, adding, cancelling an add, the refusal to publish a broken card, recovery from a token GitHub rejects, the contents of the commit itself, and leaving admin mode and coming back without signing out.
+`npm run test:admin` drives admin mode against a **mocked** GitHub API — it never reaches github.com and needs no token. It covers editing, hiding, showing, reordering, adding, cancelling an add, the refusal to publish a broken card, the contents of the commit itself, and leaving admin mode and coming back without signing out. It also walks the three ways publishing fails: a token GitHub rejects, a token for the wrong repository (which fails before any commit is attempted), and a conflict with someone else's publish — the one refusal that keeps your token rather than forgetting it.
 
 ## Refresh the preview images
 
