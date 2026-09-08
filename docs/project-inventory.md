@@ -2,7 +2,9 @@
 
 This inventory separates a useful student catalog from a raw list of repositories. A repository is not automatically a good card: students need to know what an activity does, whether it opens now, and what they need before starting.
 
-## Included in the first catalog
+## Included in the catalog
+
+The cards themselves carry only a picture, a name, and one line. The access notes below are the background record; WordMine and Go2Town are marked hidden in `projects.json` until they have something to open.
 
 | Project | Place in the catalog | Access note |
 | --- | --- | --- |

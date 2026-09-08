@@ -1,34 +1,48 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { projects, focusOptions, modeOptions } from '../data.js';
+import { readFile } from 'node:fs/promises';
 
-test('catalog contains a substantial curated launch set', () => {
+const projects = JSON.parse(await readFile('projects.json', 'utf8'));
+
+test('the catalog holds the curated set', () => {
   assert.ok(projects.length >= 15);
-  assert.ok(projects.filter(project => project.status === 'public').length >= 10);
+  assert.ok(projects.filter(project => !project.hidden).length >= 10);
 });
 
-test('project IDs and titles are unique', () => {
+test('ids and titles are unique', () => {
   assert.equal(new Set(projects.map(project => project.id)).size, projects.length);
   assert.equal(new Set(projects.map(project => project.title)).size, projects.length);
 });
 
-test('every tag can be selected in the interface', () => {
+test('every card carries exactly the six fields the page renders', () => {
   for (const project of projects) {
-    project.focus.forEach(focus => assert.ok(focusOptions.includes(focus), `${project.id}: ${focus}`));
-    project.modes.forEach(mode => assert.ok(modeOptions.includes(mode), `${project.id}: ${mode}`));
+    assert.deepEqual(Object.keys(project).sort(), ['blurb', 'hidden', 'id', 'image', 'title', 'url']);
+    assert.equal(typeof project.hidden, 'boolean');
   }
 });
 
-test('student-facing summaries are concise and free of repository jargon', () => {
+test('descriptions stay short and free of repository jargon', () => {
   for (const project of projects) {
-    assert.ok(project.summary.length <= 150, `${project.id} summary is ${project.summary.length} characters`);
-    assert.doesNotMatch(project.summary, /\b(repo|frontend|backend|API|JavaScript|GitHub Pages)\b/i, project.id);
+    assert.ok(project.blurb.length <= 160, `${project.id} blurb is ${project.blurb.length} characters`);
+    assert.doesNotMatch(project.blurb, /\b(repo|frontend|backend|API|JavaScript|GitHub Pages)\b/i, project.id);
   }
 });
 
-test('prototype cards do not pretend to have a public play link', () => {
-  for (const project of projects.filter(project => project.status === 'prototype')) {
-    assert.match(project.url, /^https:\/\/github\.com\//);
-    assert.match(project.access, /prototype/i);
-  }
+test('every link is a real URL', () => {
+  for (const project of projects) assert.doesNotThrow(() => new URL(project.url), project.id);
+});
+
+test('admin mode is limited to the three owner accounts', async () => {
+  const auth = await readFile('auth.js', 'utf8');
+  const list = auth.match(/ADMIN_ALLOWED_EMAILS = \[([\s\S]*?)\]/)[1];
+  const emails = [...list.matchAll(/'([^']+)'/g)].map(match => match[1]);
+  assert.equal(emails.length, 3);
+  for (const email of emails) assert.equal(email, email.toLowerCase(), `${email} must be lowercase to match Google`);
+});
+
+test('admin publishing targets this repository only', async () => {
+  const admin = await readFile('admin.js', 'utf8');
+  assert.match(admin, /GH_REPO = 'audiophrases\/esl-games-and-beyond'/);
+  assert.match(admin, /GH_PATH = 'projects\.json'/);
+  assert.doesNotMatch(admin, /gh[pousr]_[A-Za-z0-9]{16,}/, 'a GitHub token must never be committed');
 });

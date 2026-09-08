@@ -8,10 +8,13 @@
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <title>ESL Games and Beyond</title>
   <link rel="stylesheet" href="styles.css">
+  <script src="auth.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script type="module" src="app.js"></script>
 </head>
 <body>
-  <a class="skip-link" href="#catalog">Skip to the catalog</a>
+  <a class="skip-link" href="#catalog">Skip to the activities</a>
+
   <header class="site-header">
     <a class="brand" href="./" aria-label="ESL Games and Beyond home">
       <svg class="brand-mark" viewBox="0 0 48 48" aria-hidden="true">
@@ -20,98 +23,37 @@
       </svg>
       <span>ESL Games <i>&amp; Beyond</i></span>
     </a>
-    <nav aria-label="Main navigation">
-      <a href="#catalog">Browse</a>
-      <a href="#how-to-choose">How to choose</a>
-      <a href="https://github.com/audiophrases" target="_blank" rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>
-    </nav>
   </header>
 
   <main>
-    <section class="intro" aria-labelledby="page-title">
-      <div class="intro-copy">
-        <p class="eyebrow">A field guide for language learners</p>
-        <h1 id="page-title">Pick something to <em>play,</em> practice, or explore.</h1>
-        <p class="dek">Short games for a group. Careful practice on your own. Listening worlds you can walk through. Start with what you want to do today.</p>
-      </div>
-      <aside class="start-note" aria-label="Quick recommendation">
-        <span class="note-number">01</span>
-        <p class="note-kicker">Not sure where to begin?</p>
-        <h2>Try a five-minute listening warm-up.</h2>
-        <button class="text-button" type="button" data-quick-filter="Listening">Show listening activities <span aria-hidden="true">→</span></button>
-      </aside>
+    <section class="intro">
+      <h1>Pick something to <em>play,</em> practice, or explore.</h1>
+      <p>Short games, careful practice, and listening worlds you can walk through.</p>
     </section>
 
-    <section class="catalog-section" id="catalog" aria-labelledby="catalog-title">
-      <div class="catalog-heading">
-        <div>
-          <p class="section-label">The collection</p>
-          <h2 id="catalog-title">Find your next activity</h2>
-        </div>
-        <p id="result-count" class="result-count" aria-live="polite"></p>
-      </div>
-
-      <div class="toolbox" aria-label="Catalog filters">
-        <label class="search-field" for="search">
-          <span>Search</span>
-          <span class="search-control"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="Try pronunciation, team game, grammar…" autocomplete="off"></span>
-        </label>
-        <fieldset class="filter-group">
-          <legend>What do you want to practice?</legend>
-          <div id="focus-filters" class="filter-row"></div>
-        </fieldset>
-        <fieldset class="filter-group compact">
-          <legend>How are you working?</legend>
-          <div id="mode-filters" class="filter-row"></div>
-        </fieldset>
-        <button id="clear-filters" class="clear-button" type="button">Clear filters</button>
-      </div>
-
-      <div id="project-grid" class="project-grid" aria-live="polite"></div>
-      <div id="empty-state" class="empty-state" hidden>
-        <p class="empty-mark" aria-hidden="true">?</p>
-        <h3>No exact match</h3>
-        <p>Try a broader word or clear one of the filters.</p>
-        <button type="button" data-clear>Show everything</button>
-      </div>
-    </section>
-
-    <section class="choose-section" id="how-to-choose" aria-labelledby="choose-title">
-      <div class="choose-title-wrap">
-        <p class="section-label light">A quick way in</p>
-        <h2 id="choose-title">Choose by the room you’re in.</h2>
-      </div>
-      <div class="choose-list">
-        <button type="button" data-preset="Solo">
-          <span class="choose-index">A</span>
-          <span><strong>On your own</strong><small>Headphones, your pace, instant feedback</small></span>
-          <span aria-hidden="true">→</span>
-        </button>
-        <button type="button" data-preset="Group">
-          <span class="choose-index">B</span>
-          <span><strong>Around one screen</strong><small>Talk, guess, hand the device over</small></span>
-          <span aria-hidden="true">→</span>
-        </button>
-        <button type="button" data-preset="Class">
-          <span class="choose-index">C</span>
-          <span><strong>With your class</strong><small>Join a teacher-led game or assignment</small></span>
-          <span aria-hidden="true">→</span>
-        </button>
-      </div>
+    <section id="catalog" aria-label="Activities">
+      <div id="grid" class="grid"></div>
+      <p id="grid-note" class="grid-note" hidden></p>
     </section>
   </main>
 
   <footer>
-    <p><strong>ESL Games &amp; Beyond</strong><br>Made for real lessons and curious learners.</p>
-    <p class="footer-note">Some activities need a class code, school account, microphone, or desktop computer. Each card tells you before you open it.</p>
-    <a href="#catalog">Back to the collection ↑</a>
+    <p><strong>ESL Games &amp; Beyond</strong> — made for real lessons and curious learners.</p>
+    <p>
+      <a href="https://github.com/audiophrases" target="_blank" rel="noreferrer">GitHub</a>
+      <span aria-hidden="true">·</span>
+      <button type="button" id="admin-link" class="admin-link">Admin</button>
+    </p>
   </footer>
 
-  <dialog id="project-dialog" aria-labelledby="dialog-title">
-    <button class="dialog-close" type="button" aria-label="Close details">×</button>
-    <div id="dialog-content"></div>
+  <dialog id="signin-dialog" aria-labelledby="signin-title">
+    <h2 id="signin-title">Admin sign-in</h2>
+    <p>Sign in with an authorised Google account to edit this catalog.</p>
+    <div id="gsi-button"></div>
+    <p id="auth-error" class="error" hidden></p>
+    <button type="button" class="ghost" data-close-signin>Cancel</button>
   </dialog>
 
-  <noscript><p class="noscript">This catalog needs JavaScript to show the projects. You can still browse them at <a href="https://github.com/audiophrases">github.com/audiophrases</a>.</p></noscript>
+  <noscript><p class="noscript">This page needs JavaScript. You can still browse the projects at <a href="https://github.com/audiophrases">github.com/audiophrases</a>.</p></noscript>
 </body>
 </html>

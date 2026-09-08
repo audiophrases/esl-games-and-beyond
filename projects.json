@@ -1,0 +1,130 @@
+[
+  {
+    "id": "pinplay",
+    "title": "PinPlay",
+    "blurb": "Join a live class quiz with a PIN, or work through an assignment your teacher shared.",
+    "url": "https://audiophrases.github.io/pinplay/",
+    "image": "assets/covers/pinplay.webp",
+    "hidden": false
+  },
+  {
+    "id": "watchword",
+    "title": "Watchword",
+    "blurb": "One-word clues, one shared device, and a race to guess as many secret words as you can.",
+    "url": "https://audiophrases.github.io/Watchword/",
+    "image": "assets/covers/watchword.webp",
+    "hidden": false
+  },
+  {
+    "id": "password",
+    "title": "Password: Alphabet Race",
+    "blurb": "Hear a clue and find one word for every letter of the alphabet before time runs out.",
+    "url": "https://audiophrases.github.io/password/",
+    "image": "assets/covers/password.webp",
+    "hidden": false
+  },
+  {
+    "id": "impostor",
+    "title": "Impostor",
+    "blurb": "Everyone sees the same secret word — except the impostor, who has to blend in.",
+    "url": "https://audiophrases.github.io/impostor/",
+    "image": "assets/covers/impostor.webp",
+    "hidden": false
+  },
+  {
+    "id": "dictation-time",
+    "title": "Dictation Time",
+    "blurb": "Listen to a sentence, type what you hear, and compare your answer word by word.",
+    "url": "https://audiophrases.github.io/DictationApp/",
+    "image": "assets/covers/dictation-time.webp",
+    "hidden": false
+  },
+  {
+    "id": "read-listen-speak",
+    "title": "Read · Listen · Speak",
+    "blurb": "Read short sentences aloud and see which words your browser recognised. Microphone needed.",
+    "url": "https://audiophrases.github.io/speechtoipa/",
+    "image": "assets/covers/read-listen-speak.webp",
+    "hidden": false
+  },
+  {
+    "id": "babble-bazaar",
+    "title": "Babble Bazaar",
+    "blurb": "Listen to a customer's order, find or prepare the items, and hand them over.",
+    "url": "https://audiophrases.github.io/babblebazaar/",
+    "image": "assets/covers/babble-bazaar.webp",
+    "hidden": false
+  },
+  {
+    "id": "snakes-ladders",
+    "title": "Snakes & Ladders",
+    "blurb": "Roll, move, and take on a speaking, translation, or grammar challenge on every square.",
+    "url": "https://audiophrases.github.io/snakesandladders/",
+    "image": "assets/covers/snakes-ladders.webp",
+    "hidden": false
+  },
+  {
+    "id": "grammar-studio",
+    "title": "ESL Grammar Studio",
+    "blurb": "Browse grammar points by level, read a plain explanation, and try focused practice.",
+    "url": "https://audiophrases.github.io/grammar/",
+    "image": "assets/covers/grammar-studio.webp",
+    "hidden": false
+  },
+  {
+    "id": "irregular-verbs",
+    "title": "Irregular Verb Coach",
+    "blurb": "Build a study set of irregular verbs, hear them, and quiz yourself until they stick.",
+    "url": "https://audiophrases.github.io/irregularverbs/",
+    "image": "assets/covers/irregular-verbs.webp",
+    "hidden": false
+  },
+  {
+    "id": "prepositions",
+    "title": "Prepositions Practice",
+    "blurb": "Review how English prepositions work, then practise with three kinds of exercise.",
+    "url": "https://audiophrases.github.io/prepositions/",
+    "image": "assets/covers/prepositions.webp",
+    "hidden": false
+  },
+  {
+    "id": "ga-phonetics",
+    "title": "General American Phonetics",
+    "blurb": "Tap through the American English sound charts and hear each sound in example words.",
+    "url": "https://audiophrases.github.io/GAPhonetics/",
+    "image": "assets/covers/ga-phonetics.webp",
+    "hidden": false
+  },
+  {
+    "id": "number-mania",
+    "title": "Number Mania",
+    "blurb": "Answer arithmetic aloud or on the keypad and climb a ladder that adapts to you.",
+    "url": "https://audiophrases.github.io/Multiplication-Game/",
+    "image": "assets/covers/number-mania.webp",
+    "hidden": false
+  },
+  {
+    "id": "english-hub",
+    "title": "English Hub",
+    "blurb": "The class portal for 3rd and 4th ESO. An authorised school Google account is required.",
+    "url": "https://audiophrases.github.io/English-Hub/",
+    "image": "assets/covers/english-hub.webp",
+    "hidden": false
+  },
+  {
+    "id": "wordmine",
+    "title": "WordMine",
+    "blurb": "Hear an instruction, look around a calm 3D room, and act on what you understood.",
+    "url": "https://github.com/audiophrases/wordmine",
+    "image": "assets/covers/wordmine.webp",
+    "hidden": true
+  },
+  {
+    "id": "go2town",
+    "title": "Go2Town",
+    "blurb": "Follow Coco the seagull through Coma-ruga on short spoken walking missions.",
+    "url": "https://github.com/audiophrases/go2town",
+    "image": "assets/covers/go2town.webp",
+    "hidden": true
+  }
+]

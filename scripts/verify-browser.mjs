@@ -1,11 +1,15 @@
 import { chromium } from 'playwright-core';
-import { mkdir } from 'node:fs/promises';
+import { mkdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 
 const edge = 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe';
 const baseUrl = process.env.BASE_URL || 'http://127.0.0.1:8080/';
 const out = path.resolve('artifacts');
 await mkdir(out, { recursive: true });
+
+const projects = JSON.parse(await readFile('projects.json', 'utf8'));
+const visible = projects.filter(project => !project.hidden).length;
+
 const browser = await chromium.launch({ executablePath: edge, headless: true });
 const errors = [];
 
@@ -15,31 +19,46 @@ async function openPage(viewport) {
   page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
   const response = await page.goto(baseUrl, { waitUntil: 'networkidle', timeout: 30000 });
   if (!response?.ok()) throw new Error(`Site returned ${response?.status()}`);
+  await page.waitForSelector('.card');
   return page;
 }
 
 const desktop = await openPage({ width: 1440, height: 1000 });
-if (await desktop.locator('.project-card').count() !== 16) throw new Error('Expected 16 project cards');
-await desktop.getByRole('button', { name: 'Listening', exact: true }).click();
-if ((await desktop.locator('.project-card').count()) !== 9) throw new Error('Listening filter should show 9 cards');
-await desktop.locator('#search').fill('pronunciation');
-if ((await desktop.locator('.project-card').count()) !== 2) throw new Error('Listening + pronunciation should show 2 cards');
-await desktop.getByRole('button', { name: 'Clear filters' }).click();
-await desktop.getByRole('button', { name: 'More about PinPlay' }).click();
-if (!(await desktop.locator('#project-dialog').evaluate(node => node.open))) throw new Error('Details dialog did not open');
-if (!(await desktop.getByRole('link', { name: /Join with a PIN/ }).last().isVisible())) throw new Error('Dialog primary action is not visible');
+
+const shown = await desktop.locator('.card').count();
+if (shown !== visible) throw new Error(`Expected ${visible} visible cards, found ${shown}`);
+
+// Hidden activities must not reach a visitor, not even in the markup.
+const html = await desktop.content();
+for (const project of projects.filter(project => project.hidden)) {
+  if (html.includes(project.url)) throw new Error(`Hidden activity ${project.id} is still in the page`);
+}
+
+// Every card is a plain link: image, title, one line, no controls.
+if (await desktop.locator('.card-admin').count() !== 0) throw new Error('Admin controls are visible to visitors');
+if (await desktop.locator('.card-link').count() !== shown) throw new Error('A card is missing its link');
+if (await desktop.locator('.card-image img').count() !== shown) throw new Error('A cover image failed to load');
+
+const first = projects.find(project => !project.hidden);
+if (await desktop.locator(`.card-link[href="${first.url}"]`).count() !== 1) throw new Error(`${first.id} does not link to its activity`);
+
 await desktop.screenshot({ path: path.join(out, 'desktop.png'), fullPage: true });
-await desktop.getByRole('button', { name: 'Close details' }).click();
+
+// The admin door exists but stays shut without an authorised Google account.
+await desktop.locator('#admin-link').click();
+if (!(await desktop.locator('#signin-dialog').evaluate(node => node.open))) throw new Error('Admin sign-in did not open');
+await desktop.locator('[data-close-signin]').click();
+await desktop.close();
 
 const mobile = await openPage({ width: 390, height: 844 });
-if (await mobile.locator('.project-card').count() !== 16) throw new Error('Mobile catalog is incomplete');
+if (await mobile.locator('.card').count() !== visible) throw new Error('Mobile catalog is incomplete');
 await mobile.screenshot({ path: path.join(out, 'mobile.png'), fullPage: true });
-await mobile.getByRole('button', { name: 'Group', exact: true }).click();
-if ((await mobile.locator('.project-card').count()) !== 4) throw new Error('Group filter should show 4 cards');
 
 await browser.close();
-if (errors.length) {
-  console.error(`Browser verification failed:\n- ${errors.join('\n- ')}`);
-  process.exit(1);
-}
-console.log('Browser verification passed: desktop and mobile render, search/filter combinations work, dialog action is visible, and no console errors were captured.');
+
+// The Google script logs a warning when the origin is not authorised locally;
+// only real page errors should fail the run.
+const real = errors.filter(message => !/accounts\.google|gsi|GSI_LOGGER/i.test(message));
+if (real.length) throw new Error(`Console errors:\n- ${real.join('\n- ')}`);
+
+console.log(`Browser check passed: ${visible} visible cards, ${projects.length - visible} hidden, clean console.`);

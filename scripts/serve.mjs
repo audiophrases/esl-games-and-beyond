@@ -4,7 +4,7 @@ import path from 'node:path';
 
 const root = path.resolve('.');
 const requestedPort = Number(process.env.PORT || process.argv[2] || 8080);
-const types = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.webp': 'image/webp', '.png': 'image/png', '.svg': 'image/svg+xml' };
+const types = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8', '.webp': 'image/webp', '.png': 'image/png', '.svg': 'image/svg+xml' };
 
 const server = http.createServer(async (request, response) => {
   try {
