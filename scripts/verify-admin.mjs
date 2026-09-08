@@ -157,6 +157,9 @@ await page.locator('#editor-dialog [data-editor="save"]').click();
 await page.locator('#admin-publish').click();
 check('a visible card with no image stops the publish', (await state()).includes('no image'));
 check('nothing was sent to GitHub', putCount === 0, `saw ${putCount} commits`);
+check('a card with no image falls back to its initial',
+  await page.locator('.card[data-id="not-ready"] .card-image img').count() === 0
+  && (await page.locator('.card[data-id="not-ready"] .card-initial').textContent()) === 'N');
 
 await page.locator('.card[data-id="not-ready"] [data-admin="edit"]').click();
 await page.locator('#editor-dialog [data-editor="delete"]').click();   // confirm() is auto-accepted below

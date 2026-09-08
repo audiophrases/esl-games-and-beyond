@@ -17,7 +17,7 @@ function cardMarkup(project) {
   return `
     <a class="card-link" href="${escapeHtml(project.url)}" target="_blank" rel="noopener noreferrer">
       <span class="card-image">
-        <img src="${escapeHtml(project.image)}" alt="" loading="lazy" width="960" height="600" onerror="this.remove()">
+        ${project.image ? `<img src="${escapeHtml(project.image)}" alt="" loading="lazy" width="960" height="600" onerror="this.remove()">` : ''}
         <span class="card-initial" aria-hidden="true">${escapeHtml(project.title.trim().charAt(0))}</span>
       </span>
       <span class="card-body">

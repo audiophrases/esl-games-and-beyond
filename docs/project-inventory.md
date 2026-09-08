@@ -4,7 +4,7 @@ This inventory separates a useful student catalog from a raw list of repositorie
 
 ## Included in the catalog
 
-The cards themselves carry only a picture, a name, and one line. The access notes below are the background record; WordMine and Go2Town are marked hidden in `projects.json` until they have something to open.
+The cards themselves carry only a picture, a name, and one line. The access notes below are the background record of why each project was included, not the live state of the site: which cards are visible is decided in admin mode and recorded by the `hidden` flags in `projects.json`.
 
 | Project | Place in the catalog | Access note |
 | --- | --- | --- |

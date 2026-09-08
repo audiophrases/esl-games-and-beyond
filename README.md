@@ -17,7 +17,7 @@ Every card lives in [`projects.json`](projects.json) and has exactly six fields:
 | `image` | Cover image, normally `assets/covers/<id>.webp`. A hidden card may go without one; a visible card may not |
 | `hidden` | `true` keeps it off the public page |
 
-WordMine and Go2Town ship hidden: they are local desktop prototypes with nothing to open yet. Unhide them from admin mode when they are ready.
+Which activities are hidden changes as you work — admin mode decides it, and the `hidden` flags in `projects.json` are the record. Don't look for the list here, it will be out of date. WordMine and Go2Town started hidden because they are local desktop prototypes with nothing to open yet.
 
 The longer notes about what each activity needs before you start live in [`docs/project-inventory.md`](docs/project-inventory.md) rather than on the cards.
 
