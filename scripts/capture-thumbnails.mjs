@@ -12,12 +12,11 @@ const projects = [
   ['irregular-verbs', 'https://audiophrases.github.io/irregularverbs/'],
   ['prepositions', 'https://audiophrases.github.io/prepositions/'],
   ['ga-phonetics', 'https://audiophrases.github.io/GAPhonetics/'],
-  ['vocab', 'https://audiophrases.github.io/vocab/'],
   ['snakes-ladders', 'https://audiophrases.github.io/snakesandladders/'],
   ['babble-bazaar', 'https://audiophrases.github.io/babblebazaar/'],
   ['number-mania', 'https://audiophrases.github.io/Multiplication-Game/'],
   ['english-hub', 'https://audiophrases.github.io/English-Hub/'],
-  ['pdf-library', 'https://audiophrases.github.io/pdfgallery/']
+  ['password', 'https://audiophrases.github.io/password/']
 ];
 
 const edge = 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe';
@@ -33,19 +32,31 @@ const context = await browser.newContext({
 const results = [];
 for (const [slug, url] of projects) {
   const page = await context.newPage();
+  let capturePage = page;
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
   try {
     const response = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
     await page.waitForTimeout(2500);
-    await page.screenshot({
+    if (slug === 'password') {
+      await page.click('#load-sample');
+      capturePage = await Promise.all([
+        context.waitForEvent('page'),
+        page.click('#start-game')
+      ]).then(([opened]) => opened);
+      capturePage.on('pageerror', error => errors.push(error.message));
+      await capturePage.waitForLoadState('networkidle');
+      await capturePage.waitForTimeout(500);
+    }
+    await capturePage.screenshot({
       path: path.join(outDir, `${slug}.png`),
       clip: { x: 0, y: 0, width: 1280, height: 800 }
     });
-    results.push({ slug, status: response?.status() ?? null, title: await page.title(), errors: errors.slice(0, 3) });
+    results.push({ slug, status: response?.status() ?? null, title: await capturePage.title(), errors: errors.slice(0, 3) });
   } catch (error) {
     results.push({ slug, error: error.message, errors: errors.slice(0, 3) });
   } finally {
+    if (capturePage !== page) await capturePage.close();
     await page.close();
   }
 }

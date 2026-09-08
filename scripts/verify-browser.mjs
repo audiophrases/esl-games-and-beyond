@@ -21,7 +21,7 @@ async function openPage(viewport) {
 const desktop = await openPage({ width: 1440, height: 1000 });
 if (await desktop.locator('.project-card').count() !== 16) throw new Error('Expected 16 project cards');
 await desktop.getByRole('button', { name: 'Listening', exact: true }).click();
-if ((await desktop.locator('.project-card').count()) !== 8) throw new Error('Listening filter should show 8 cards');
+if ((await desktop.locator('.project-card').count()) !== 9) throw new Error('Listening filter should show 9 cards');
 await desktop.locator('#search').fill('pronunciation');
 if ((await desktop.locator('.project-card').count()) !== 2) throw new Error('Listening + pronunciation should show 2 cards');
 await desktop.getByRole('button', { name: 'Clear filters' }).click();
@@ -35,7 +35,7 @@ const mobile = await openPage({ width: 390, height: 844 });
 if (await mobile.locator('.project-card').count() !== 16) throw new Error('Mobile catalog is incomplete');
 await mobile.screenshot({ path: path.join(out, 'mobile.png'), fullPage: true });
 await mobile.getByRole('button', { name: 'Group', exact: true }).click();
-if ((await mobile.locator('.project-card').count()) !== 3) throw new Error('Group filter should show 3 cards');
+if ((await mobile.locator('.project-card').count()) !== 4) throw new Error('Group filter should show 4 cards');
 
 await browser.close();
 if (errors.length) {

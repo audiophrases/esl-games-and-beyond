@@ -108,13 +108,13 @@ export const projects = [
     url: 'https://audiophrases.github.io/Multiplication-Game/', source: 'https://github.com/audiophrases/Multiplication-Game', image: 'assets/covers/number-mania.webp'
   },
   {
-    id: 'pdf-library', title: 'Class PDF Library', kicker: 'Handouts and reading',
-    summary: 'Browse classroom PDF collections as a visual shelf instead of a list of filenames.',
-    detail: 'Each collection shows first-page thumbnails, so it is easier to recognize the worksheet, reading, or reference you need.',
-    helps: 'Keep useful class materials in one place and reopen them on any device.',
-    focus: ['Reading', 'Beyond'], modes: ['Solo', 'Class'], level: 'Mixed',
-    access: 'Available collections depend on the shared link', status: 'public', action: 'Browse PDFs',
-    url: 'https://audiophrases.github.io/pdfgallery/', source: 'https://github.com/audiophrases/pdfgallery', image: 'assets/covers/pdf-library.webp'
+    id: 'password', title: 'Password: Alphabet Race', kicker: 'Clues around the alphabet',
+    summary: 'Listen to a clue and find one word for each letter before the clock runs out.',
+    detail: 'Play alone or in teams around an A–Z letter circle. Clues can stay hidden for audio-first play, and the teacher can judge answers or use speech recognition to help.',
+    helps: 'Practice fast vocabulary recall, careful listening, definitions, and speaking under light time pressure.',
+    focus: ['Games', 'Listening', 'Speaking', 'Vocabulary'], modes: ['Group', 'Class', 'Solo'], level: 'Teacher chooses',
+    access: 'Sample round included; Chrome or Edge needed for speech recognition', status: 'public', action: 'Play the alphabet race',
+    url: 'https://audiophrases.github.io/password/', source: 'https://github.com/audiophrases/password', image: 'assets/covers/password.webp'
   },
   {
     id: 'english-hub', title: 'English Hub', kicker: 'School portal',
