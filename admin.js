@@ -143,13 +143,15 @@ function buildBar(email) {
     <span class="admin-bar-actions">
       <button type="button" id="admin-add">Add activity</button>
       <button type="button" id="admin-publish" disabled>Publish to GitHub</button>
-      <button type="button" id="admin-exit" class="ghost">Sign out</button>
+      <button type="button" id="admin-done" class="ghost">Done</button>
+      <button type="button" id="admin-signout" class="ghost">Sign out</button>
     </span>`;
   document.body.prepend(bar);
 
   bar.querySelector('#admin-add').addEventListener('click', addActivity);
   bar.querySelector('#admin-publish').addEventListener('click', publish);
-  bar.querySelector('#admin-exit').addEventListener('click', () => {
+  bar.querySelector('#admin-done').addEventListener('click', exitAdmin);
+  bar.querySelector('#admin-signout').addEventListener('click', () => {
     if (dirty && !confirm('There are unpublished changes. Sign out and lose them?')) return;
     dirty = false;
     adminSignOut();
@@ -408,24 +410,56 @@ async function publish() {
 
 /* --- entry point ---------------------------------------------------------- */
 
+function onGridClick(event) {
+  const button = event.target.closest('[data-admin]');
+  if (!button) return;
+  const { admin: action, id } = button.dataset;
+  if (action === 'edit') openEditor(id);
+  else if (action === 'toggle') toggleHidden(id);
+  else if (action === 'up') move(id, -1);
+  else if (action === 'down') move(id, 1);
+}
+
+function onBeforeUnload(event) {
+  if (!dirty) return;
+  event.preventDefault();
+  event.returnValue = '';
+}
+
+// Done: back to the visitor's view, still signed in. The Admin link in the
+// footer comes straight back here without another trip through Google.
+async function exitAdmin() {
+  if (dirty && !confirm('There are unpublished changes. Leave admin mode and lose them?')) return;
+
+  // Fetch first. Show what is actually published, not the edits just
+  // abandoned; if the fetch fails the in-memory list stays, which still hides
+  // the hidden ones.
+  await catalog.reload().catch(() => {});
+
+  // Everything from here runs in one task, so the page never paints a state
+  // that is half out of admin mode.
+  document.querySelector('#grid').removeEventListener('click', onGridClick);
+  window.removeEventListener('beforeunload', onBeforeUnload);
+  document.querySelector('.admin-bar')?.remove();
+  document.querySelectorAll('#editor-dialog, #token-dialog').forEach(dialog => dialog.remove());
+
+  dirty = false;
+  pendingNew = null;
+  editingId = null;
+  catalog.setAdmin(false);
+}
+
 export function startAdmin(api) {
+  if (document.querySelector('.admin-bar')) return;   // already on
+
   catalog = api;
+  dirty = false;
+  pendingNew = null;
+  editingId = null;
+
   catalog.setAdmin(true);
   buildBar(adminSignedInEmail());
 
-  document.querySelector('#grid').addEventListener('click', event => {
-    const button = event.target.closest('[data-admin]');
-    if (!button) return;
-    const { admin: action, id } = button.dataset;
-    if (action === 'edit') openEditor(id);
-    else if (action === 'toggle') toggleHidden(id);
-    else if (action === 'up') move(id, -1);
-    else if (action === 'down') move(id, 1);
-  });
-
-  window.addEventListener('beforeunload', event => {
-    if (!dirty) return;
-    event.preventDefault();
-    event.returnValue = '';
-  });
+  document.querySelector('#grid').addEventListener('click', onGridClick);
+  window.addEventListener('beforeunload', onBeforeUnload);
 }

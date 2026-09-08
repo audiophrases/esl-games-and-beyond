@@ -15,7 +15,7 @@ export function escapeHtml(value) {
 
 function cardMarkup(project) {
   return `
-    <a class="card-link" href="${escapeHtml(project.url)}" target="_blank" rel="noreferrer">
+    <a class="card-link" href="${escapeHtml(project.url)}" target="_blank" rel="noopener noreferrer">
       <span class="card-image">
         <img src="${escapeHtml(project.image)}" alt="" loading="lazy" width="960" height="600" onerror="this.remove()">
         <span class="card-initial" aria-hidden="true">${escapeHtml(project.title.trim().charAt(0))}</span>
@@ -63,12 +63,22 @@ export function render() {
   }
 }
 
+// GitHub Pages will happily serve a stale copy right after a commit.
+async function fetchProjects() {
+  const response = await fetch(`projects.json?v=${Date.now()}`, { cache: 'no-store' });
+  if (!response.ok) throw new Error(`projects.json returned ${response.status}`);
+  return response.json();
+}
+
 /* The API admin.js works through, so nothing student-facing depends on it. */
 export const catalog = {
   get: () => state.projects,
   set(next) { state.projects = next; render(); },
   setAdmin(on) { state.admin = on; document.body.classList.toggle('admin-on', on); render(); },
   isAdmin: () => state.admin,
+  // Leaving admin mode drops unpublished edits, so the page has to go back to
+  // what is actually published rather than keep showing them.
+  async reload() { state.projects = await fetchProjects(); render(); },
   render,
   escapeHtml
 };
@@ -87,10 +97,7 @@ async function startAdmin() {
 
 async function load() {
   try {
-    // GitHub Pages will happily serve a stale copy right after a commit.
-    const response = await fetch(`projects.json?v=${Date.now()}`, { cache: 'no-store' });
-    if (!response.ok) throw new Error(`projects.json returned ${response.status}`);
-    state.projects = await response.json();
+    state.projects = await fetchProjects();
   } catch (error) {
     note.textContent = 'The activity list could not be loaded. Please reload the page.';
     note.hidden = false;
@@ -109,6 +116,9 @@ window.onAdminAuthSuccess = () => {
 
 adminLink.addEventListener('click', () => {
   if (state.admin) return;
+  // Still signed in from earlier in this session — leaving admin mode should
+  // not cost a second trip through Google to come back.
+  if (typeof adminIsSignedIn === 'function' && adminIsSignedIn()) { startAdmin(); return; }
   signinDialog.showModal();
   adminRenderSignIn('gsi-button');
 });

@@ -24,7 +24,8 @@ page.on('console', message => {
 });
 // Playwright dismisses native dialogs by default, which would silently cancel
 // every confirm() this script means to go through with.
-page.on('dialog', dialog => dialog.accept());
+let confirmAnswer = 'accept';
+page.on('dialog', dialog => (confirmAnswer === 'accept' ? dialog.accept() : dialog.dismiss()));
 
 function check(label, condition, detail) {
   if (condition) console.log(`  ok  ${label}`);
@@ -211,6 +212,38 @@ await page.waitForSelector('.toast');
 check('a second publish does not ask for the token again', !(await page.locator('#token-dialog').evaluate(node => node.open)));
 check('the second commit was sent', putCount === 2, `saw ${putCount}`);
 check('the second commit carries the newly hidden card', JSON.parse(Buffer.from(putBody.content, 'base64').toString('utf8')).find(p => p.id === firstVisible)?.hidden === true);
+
+/* --- leaving admin mode without signing out ------------------------------- */
+
+console.log('\nleaving admin mode');
+const publishedVisible = catalog.filter(project => !project.hidden).length;
+
+await page.locator('#admin-done').click();
+await page.waitForFunction(() => !document.querySelector('.admin-bar') && !document.querySelector('.card-admin'));
+check('the admin bar goes away', await page.locator('.admin-bar').count() === 0);
+check('the card controls go away', await page.locator('.card-admin').count() === 0);
+check('the visitor sees only published activities', (await ids()).length === publishedVisible, `saw ${(await ids()).length}`);
+check('the account is still signed in', await page.evaluate(() => sessionStorage.getItem('eslAdminEmail')) !== null);
+check('the unpublished edits are gone', (await page.locator(`.card[data-id="${firstVisible}"] .card-title`).textContent()) !== 'Renamed');
+
+await page.locator('#admin-link').click();
+await page.waitForSelector('.admin-bar');
+check('the Admin link comes straight back in', await page.locator('.admin-bar').count() === 1);
+check('without asking Google again', !(await page.locator('#signin-dialog').evaluate(node => node.open)));
+check('the whole catalog is listed again', (await ids()).length === catalog.length);
+check('and it arrives clean', await publishDisabled());
+
+// Unpublished work must not vanish on a mis-click.
+await page.locator(`.card[data-id="${firstVisible}"] [data-admin="toggle"]`).click();
+confirmAnswer = 'dismiss';
+await page.locator('#admin-done').click();
+check('leaving with unpublished changes asks first', await page.locator('.admin-bar').count() === 1);
+check('saying no keeps the changes', !(await publishDisabled()));
+
+confirmAnswer = 'accept';
+await page.locator('#admin-done').click();
+await page.waitForFunction(() => !document.querySelector('.admin-bar') && !document.querySelector('.card-admin'));
+check('saying yes leaves and discards them', (await ids()).length === publishedVisible);
 
 await browser.close();
 

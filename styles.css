@@ -45,14 +45,14 @@ footer { width: min(1180px, calc(100% - 3rem)); margin-inline: auto; }
   display: flex; align-items: center;
   border-bottom: 1px solid var(--line);
 }
-.brand { display: flex; align-items: center; gap: .7rem; text-decoration: none; font-weight: 800; letter-spacing: -.025em; }
+/* The site name is the page's only heading now that the intro is gone, so it
+   carries the h1 — the same mark, no extra words on screen. */
+.brand-heading { margin: 0; font-size: 1rem; font-weight: 800; }
+.brand { display: flex; align-items: center; gap: .7rem; text-decoration: none; letter-spacing: -.025em; }
 .brand i { color: var(--orange); font-family: Georgia, serif; font-weight: 400; }
 .brand-mark { width: 36px; fill: var(--yellow); stroke: var(--ink); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 
-.intro { padding: 4rem 0 3rem; max-width: 42ch; }
-.intro h1 { margin: 0; font-size: clamp(2rem, 5vw, 3rem); line-height: 1.1; letter-spacing: -.03em; }
-.intro h1 em { color: var(--orange); font-family: Georgia, serif; font-style: italic; }
-.intro p { margin: 1rem 0 0; color: var(--muted); }
+#catalog { padding-top: 3rem; }
 
 /* --- the grid ------------------------------------------------------------- */
 
@@ -222,7 +222,7 @@ dialog button.danger { background: #b3261e; border-color: #b3261e; }
 }
 
 @media (max-width: 560px) {
-  .intro { padding: 2.5rem 0 2rem; }
+  #catalog { padding-top: 2rem; }
   .grid { grid-template-columns: 1fr; gap: 2rem; }
 }
 

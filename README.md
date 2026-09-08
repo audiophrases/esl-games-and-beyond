@@ -2,7 +2,7 @@
 
 A student-facing index of the language games, practice tools, and class resources published by [audiophrases](https://github.com/audiophrases).
 
-One page, one grid, one card per activity: a picture, a name, and a single line saying what you do. There are no filters, tags, levels, or status badges to work through first — if something needs a microphone, a class code, or a school account, that line says so.
+One page, one grid, one card per activity: a picture, a name, and a single line saying what you do. No headline, no filters, tags, levels, or status badges to work through first — the activities start straight away. If something needs a microphone, a class code, or a school account, that single line says so.
 
 ## The catalog
 
@@ -29,6 +29,7 @@ Three Google accounts can edit the catalog from the site itself — `eugenimonfo
 2. Hidden activities appear alongside the rest, dimmed and outlined.
 3. Each card gains **Edit**, **Hide** / **Show**, and arrows to move it. The bar adds **Add activity**.
 4. **Publish to GitHub** commits `projects.json`. GitHub Pages redeploys within a minute or so.
+5. **Done** returns to the visitor's view while staying signed in, so the footer **Admin** link comes straight back without another trip through Google. It reloads the published catalog, so anything unpublished is dropped — it asks first. **Sign out** ends the session and forgets the token.
 
 Nothing is saved until you publish, and leaving the page with unpublished changes asks first. A new card that you cancel out of is dropped again rather than left behind untitled, and its `id` follows the title you type unless you set one yourself.
 
@@ -75,7 +76,7 @@ npm run test:admin
 
 `npm run test:browser` drives the visitor's page in Microsoft Edge: desktop and phone layouts, and that hidden activities never reach the markup a visitor receives.
 
-`npm run test:admin` drives admin mode against a **mocked** GitHub API — it never reaches github.com and needs no token. It covers editing, hiding, showing, reordering, adding, cancelling an add, the refusal to publish a broken card, recovery from a token GitHub rejects, and the contents of the commit itself.
+`npm run test:admin` drives admin mode against a **mocked** GitHub API — it never reaches github.com and needs no token. It covers editing, hiding, showing, reordering, adding, cancelling an add, the refusal to publish a broken card, recovery from a token GitHub rejects, the contents of the commit itself, and leaving admin mode and coming back without signing out.
 
 ## Refresh the preview images
 
