@@ -30,8 +30,8 @@ function cardMarkup(project) {
 function adminControls(project, index, total) {
   return `
     <div class="card-admin">
-      <button type="button" data-admin="edit" data-id="${escapeHtml(project.id)}">Edit</button>
-      <button type="button" data-admin="toggle" data-id="${escapeHtml(project.id)}">${project.hidden ? 'Show' : 'Hide'}</button>
+      <button type="button" data-admin="edit" data-id="${escapeHtml(project.id)}" aria-label="Edit ${escapeHtml(project.title)}">Edit</button>
+      <button type="button" data-admin="toggle" data-id="${escapeHtml(project.id)}" aria-label="${project.hidden ? 'Show' : 'Hide'} ${escapeHtml(project.title)}">${project.hidden ? 'Show' : 'Hide'}</button>
       <span class="card-admin-move">
         <button type="button" data-admin="up" data-id="${escapeHtml(project.id)}" aria-label="Move ${escapeHtml(project.title)} earlier"${index === 0 ? ' disabled' : ''}>↑</button>
         <button type="button" data-admin="down" data-id="${escapeHtml(project.id)}" aria-label="Move ${escapeHtml(project.title)} later"${index === total - 1 ? ' disabled' : ''}>↓</button>
