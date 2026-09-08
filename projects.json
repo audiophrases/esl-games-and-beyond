@@ -1,13 +1,5 @@
 [
   {
-    "id": "pinplay",
-    "title": "PinPlay",
-    "blurb": "Join a live class quiz with a PIN, or work through an assignment your teacher shared.",
-    "url": "https://audiophrases.github.io/pinplay/",
-    "image": "assets/covers/pinplay.webp",
-    "hidden": false
-  },
-  {
     "id": "watchword",
     "title": "Watchword",
     "blurb": "One-word clues, one shared device, and a race to guess as many secret words as you can.",
@@ -101,7 +93,15 @@
     "blurb": "Answer arithmetic aloud or on the keypad and climb a ladder that adapts to you.",
     "url": "https://audiophrases.github.io/Multiplication-Game/",
     "image": "assets/covers/number-mania.webp",
-    "hidden": true
+    "hidden": false
+  },
+  {
+    "id": "pinplay",
+    "title": "PinPlay",
+    "blurb": "Join a live class quiz with a PIN, or work through an assignment your teacher shared.",
+    "url": "https://audiophrases.github.io/pinplay/",
+    "image": "assets/covers/pinplay.webp",
+    "hidden": false
   },
   {
     "id": "english-hub",
