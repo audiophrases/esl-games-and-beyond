@@ -51,7 +51,11 @@ export function render() {
   }));
 
   const hiddenCount = state.projects.filter(project => project.hidden).length;
-  if (state.admin && hiddenCount) {
+  if (!visible.length) {
+    // Everything hidden would otherwise leave a visitor on a blank page.
+    note.textContent = 'Nothing is published here just yet. Please check back soon.';
+    note.hidden = false;
+  } else if (state.admin && hiddenCount) {
     note.textContent = `${hiddenCount} ${hiddenCount === 1 ? 'activity is' : 'activities are'} hidden from visitors.`;
     note.hidden = false;
   } else {
@@ -70,8 +74,15 @@ export const catalog = {
 };
 
 async function startAdmin() {
-  const module = await import('./admin.js');
-  module.startAdmin(catalog);
+  try {
+    const module = await import('./admin.js');
+    module.startAdmin(catalog);
+  } catch (error) {
+    // Silence here would look like a sign-in that simply did nothing.
+    note.textContent = 'Admin mode could not load. Reload the page and sign in again.';
+    note.hidden = false;
+    console.error(error);
+  }
 }
 
 async function load() {

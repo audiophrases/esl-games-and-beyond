@@ -1,23 +1,16 @@
 import { chromium } from 'playwright-core';
-import { mkdir } from 'node:fs/promises';
+import { mkdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 
-const projects = [
-  ['pinplay', 'https://audiophrases.github.io/pinplay/'],
-  ['dictation-time', 'https://audiophrases.github.io/DictationApp/'],
-  ['read-listen-speak', 'https://audiophrases.github.io/speechtoipa/'],
-  ['watchword', 'https://audiophrases.github.io/Watchword/'],
-  ['impostor', 'https://audiophrases.github.io/impostor/'],
-  ['grammar-studio', 'https://audiophrases.github.io/grammar/'],
-  ['irregular-verbs', 'https://audiophrases.github.io/irregularverbs/'],
-  ['prepositions', 'https://audiophrases.github.io/prepositions/'],
-  ['ga-phonetics', 'https://audiophrases.github.io/GAPhonetics/'],
-  ['snakes-ladders', 'https://audiophrases.github.io/snakesandladders/'],
-  ['babble-bazaar', 'https://audiophrases.github.io/babblebazaar/'],
-  ['number-mania', 'https://audiophrases.github.io/Multiplication-Game/'],
-  ['english-hub', 'https://audiophrases.github.io/English-Hub/'],
-  ['password', 'https://audiophrases.github.io/password/']
-];
+// Read the catalog rather than keeping a second copy of it: an activity added
+// through admin mode should get a cover from this script without anyone having
+// to remember to edit it too. Repository links have no app to photograph.
+const catalog = JSON.parse(await readFile('projects.json', 'utf8'));
+const projects = catalog
+  .filter(project => !/^https:\/\/github\.com\//.test(project.url))
+  .map(project => [project.id, project.url]);
+
+console.log(`Capturing ${projects.length} of ${catalog.length} activities.`);
 
 const edge = 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe';
 const outDir = path.resolve('assets/screens');

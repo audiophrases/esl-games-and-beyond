@@ -14,7 +14,7 @@ Every card lives in [`projects.json`](projects.json) and has exactly six fields:
 | `title` | The name shown on the card |
 | `blurb` | One sentence, 160 characters at most |
 | `url` | Where the card opens |
-| `image` | Cover image, normally `assets/covers/<id>.webp` |
+| `image` | Cover image, normally `assets/covers/<id>.webp`. A hidden card may go without one; a visible card may not |
 | `hidden` | `true` keeps it off the public page |
 
 WordMine and Go2Town ship hidden: they are local desktop prototypes with nothing to open yet. Unhide them from admin mode when they are ready.
@@ -30,7 +30,9 @@ Three Google accounts can edit the catalog from the site itself — `eugenimonfo
 3. Each card gains **Edit**, **Hide** / **Show**, and arrows to move it. The bar adds **Add activity**.
 4. **Publish to GitHub** commits `projects.json`. GitHub Pages redeploys within a minute or so.
 
-Nothing is saved until you publish, and leaving the page with unpublished changes asks first.
+Nothing is saved until you publish, and leaving the page with unpublished changes asks first. A new card that you cancel out of is dropped again rather than left behind untitled, and its `id` follows the title you type unless you set one yourself.
+
+Publishing refuses to commit a card with no title or link, or a *visible* card with no image — that file is what the whole site reads, so a broken card must not reach it.
 
 ### The GitHub token
 
@@ -39,6 +41,8 @@ The first publish asks for a token and keeps it in `sessionStorage` for that tab
 - Repository access → Only select repositories → `esl-games-and-beyond`
 - Permissions → Repository permissions → Contents → Read and write
 - A short expiry; mint another when it lapses.
+
+If GitHub refuses the token — expired, wrong scope, wrong repository — it is forgotten straight away and the next publish asks for a new one, so a bad paste never locks you out of the tab.
 
 ### Google origins
 
@@ -62,10 +66,16 @@ Open <http://127.0.0.1:8080>. The site has no build step and no runtime dependen
 ```bash
 npm run validate
 npm test
+npm run serve          # the two browser checks need the site running
 npm run test:browser
+npm run test:admin
 ```
 
-`npm run validate` checks the schema of every card, the URLs, the local cover files, and the landmarks the page needs. The unit tests check size, uniqueness, blurb length, the admin allow-list, and that no token was ever committed. The browser test uses the installed Microsoft Edge to check desktop and phone layouts, confirms hidden activities never reach the markup a visitor receives, and confirms the admin door opens but stays shut.
+`npm run validate` checks the schema of every card, the URLs, the local cover files, and the landmarks the page needs. The unit tests check size, uniqueness, blurb length, the admin allow-list, and that no token was ever committed.
+
+`npm run test:browser` drives the visitor's page in Microsoft Edge: desktop and phone layouts, and that hidden activities never reach the markup a visitor receives.
+
+`npm run test:admin` drives admin mode against a **mocked** GitHub API — it never reaches github.com and needs no token. It covers editing, hiding, showing, reordering, adding, cancelling an add, the refusal to publish a broken card, recovery from a token GitHub rejects, and the contents of the commit itself.
 
 ## Refresh the preview images
 
@@ -73,7 +83,7 @@ npm run test:browser
 npm run screenshots
 ```
 
-The capture script opens each public app in Microsoft Edge at 1280×800 and saves PNGs under `assets/screens/`. The optimized covers live in `assets/covers/`; refresh those from the captures when an app changes substantially.
+The capture script reads `projects.json` and opens each web app in Microsoft Edge at 1280×800, saving PNGs under `assets/screens/`. Repository links are skipped — there is no app to photograph. Because it follows the catalog, an activity you add through admin mode gets a capture without anyone editing the script. The optimized covers live in `assets/covers/`; refresh those from the captures when an app changes substantially.
 
 WordMine and Go2Town use representative images from their local project folders because they have no public web build. Do not copy the Go2Town Street View fixture dataset into this repository.
 

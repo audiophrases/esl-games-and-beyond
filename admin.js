@@ -31,6 +31,7 @@ const GH_TOKEN_KEY = 'eslGithubToken';
 let catalog = null;
 let dirty = false;
 let editingId = null;
+let pendingNew = null;   // a just-added card, dropped again if the editor is cancelled
 
 /* --- token ---------------------------------------------------------------- */
 
@@ -55,12 +56,20 @@ const ghHeaders = token => ({
   'X-GitHub-Api-Version': '2022-11-28'
 });
 
-function ghMessage(response, body) {
-  if (response.status === 401) return 'GitHub rejected the token. It may be expired or mistyped.';
-  if (response.status === 403) return `That token is not allowed to write here. Check it has Contents: Read and write on ${GH_REPO}.`;
-  if (response.status === 404) return `GitHub cannot see ${GH_REPO}. Check the token grants access to that repository.`;
-  if (response.status === 409) return 'Someone else changed the catalog first. Reload the page and make the edit again.';
-  return `GitHub returned ${response.status}${body?.message ? `: ${body.message}` : ''}.`;
+// 401, 403 and 404 all mean "this token cannot do this", so all three have to
+// forget it. Keeping a wrong-scope token would leave the next publish showing
+// "fix the token" with no way left to enter a different one.
+function ghError(response, body) {
+  const messages = {
+    401: 'GitHub rejected the token. It may be expired or mistyped.',
+    403: `That token is not allowed to write here. It needs Contents: Read and write on ${GH_REPO}.`,
+    404: `GitHub cannot see ${GH_REPO}. Check the token grants access to that repository.`,
+    409: 'Someone else changed the catalog first. Reload the page and make the edit again.'
+  };
+  const error = new Error(messages[response.status]
+    || `GitHub returned ${response.status}${body?.message ? `: ${body.message}` : ''}.`);
+  error.tokenProblem = [401, 403, 404].includes(response.status);
+  return error;
 }
 
 // The Contents API needs the blob SHA of the file it is replacing.
@@ -68,7 +77,7 @@ async function currentSha(token) {
   const response = await fetch(`${GH_API}/repos/${GH_REPO}/contents/${GH_PATH}?ref=${GH_BRANCH}`, {
     headers: ghHeaders(token), cache: 'no-store'
   });
-  if (!response.ok) throw new Error(ghMessage(response, await response.json().catch(() => null)));
+  if (!response.ok) throw ghError(response, await response.json().catch(() => null));
   return (await response.json()).sha;
 }
 
@@ -88,7 +97,7 @@ async function commit(projects, message) {
     })
   });
   const body = await response.json().catch(() => null);
-  if (!response.ok) throw new Error(ghMessage(response, body));
+  if (!response.ok) throw ghError(response, body);
   return body;
 }
 
@@ -165,11 +174,23 @@ function toggleHidden(id) {
   markDirty(true);
 }
 
+// The blank card has to exist before the editor can point at it, so cancelling
+// has to take it away again — otherwise a change of mind leaves an untitled,
+// linkless entry sitting in the catalog waiting to be published.
 function addActivity() {
-  const project = { id: uniqueId('new-activity'), title: 'New activity', blurb: '', url: '', image: '', hidden: true };
+  const project = { id: uniqueId('new-activity'), title: '', blurb: '', url: '', image: '', hidden: true };
+  pendingNew = { id: project.id, wasDirty: dirty };
   catalog.set([...catalog.get(), project]);
   markDirty(true);
   openEditor(project.id);
+}
+
+function discardPendingNew() {
+  if (!pendingNew) return;
+  const { id, wasDirty } = pendingNew;
+  pendingNew = null;
+  catalog.set(catalog.get().filter(project => project.id !== id));
+  markDirty(wasDirty);
 }
 
 /* --- editor --------------------------------------------------------------- */
@@ -183,7 +204,7 @@ function field(label, name, value, hint) {
 
 function editorMarkup(project) {
   return `
-    <h2 id="editor-title">Edit activity</h2>
+    <h2 id="editor-title">${pendingNew ? 'Add an activity' : 'Edit activity'}</h2>
     ${field('Title', 'title', project.title)}
     <label class="admin-field">
       <span>Short description</span>
@@ -192,7 +213,7 @@ function editorMarkup(project) {
     </label>
     ${field('Link', 'url', project.url, 'https://audiophrases.github.io/...')}
     ${field('Image', 'image', project.image, 'assets/covers/name.webp')}
-    ${field('Id', 'id', project.id, 'used inside the file only')}
+    ${field('Id', 'id', pendingNew ? '' : project.id, 'made from the title')}
     <label class="admin-check">
       <input type="checkbox" data-field="hidden"${project.hidden ? ' checked' : ''}>
       <span>Hidden — only admins see this card</span>
@@ -222,6 +243,9 @@ function editorDialog() {
       else if (button.dataset.editor === 'save') saveEditor(dialog);
       else if (button.dataset.editor === 'delete') deleteEditor(dialog);
     };
+    // Covers Cancel and the Escape key alike. Saving clears pendingNew first,
+    // so a saved card survives the close that follows it.
+    dialog.onclose = discardPendingNew;
   }
   return dialog;
 }
@@ -268,6 +292,7 @@ function saveEditor(dialog) {
     hidden: dialog.querySelector('[data-field="hidden"]').checked
   };
 
+  pendingNew = null;   // it has a title and a link now; it is a real card
   catalog.set(catalog.get().map(project => (project.id === editingId ? updated : project)));
   markDirty(true);
   dialog.close();
@@ -275,7 +300,8 @@ function saveEditor(dialog) {
 
 function deleteEditor(dialog) {
   const project = catalog.get().find(item => item.id === editingId);
-  if (!confirm(`Delete "${project ? project.title : editingId}" from the catalog?`)) return;
+  if (!confirm(`Delete "${project && project.title ? project.title : 'this activity'}" from the catalog?`)) return;
+  pendingNew = null;
   catalog.set(catalog.get().filter(item => item.id !== editingId));
   markDirty(true);
   dialog.close();
@@ -283,22 +309,83 @@ function deleteEditor(dialog) {
 
 /* --- publish -------------------------------------------------------------- */
 
+// A password field in the page rather than prompt(): the token stays out of
+// the browser's own dialog history, and it can be re-entered after a refusal.
 function askForToken() {
-  const token = prompt(
-    'Paste a GitHub token with Contents: Read and write on esl-games-and-beyond.\n'
-    + 'It stays in this tab for this session only.\n'
-    + 'Create one at github.com/settings/personal-access-tokens/new'
-  );
-  const trimmed = (token || '').trim();
-  if (trimmed) writeToken(trimmed);
-  return !!trimmed;
+  let dialog = document.querySelector('#token-dialog');
+  if (!dialog) {
+    dialog = document.createElement('dialog');
+    dialog.id = 'token-dialog';
+    dialog.setAttribute('aria-labelledby', 'token-title');
+    document.body.append(dialog);
+  }
+
+  dialog.innerHTML = `
+    <h2 id="token-title">A GitHub token is needed to publish</h2>
+    <p>Create a fine-grained token with <strong>Contents: Read and write</strong> on
+    <strong>${GH_REPO.split('/')[1]}</strong> only, then paste it here. It stays in this tab
+    for this session and is never saved to the site.
+    <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noreferrer">Create one</a>.</p>
+    <label class="admin-field">
+      <span>Token</span>
+      <input type="password" data-field="token" placeholder="github_pat_…" autocomplete="off">
+    </label>
+    <p class="admin-error" data-role="error" hidden></p>
+    <div class="admin-editor-actions">
+      <span class="spacer"></span>
+      <button type="button" data-token="cancel" class="ghost">Cancel</button>
+      <button type="button" data-token="save">Use this token</button>
+    </div>`;
+
+  return new Promise(resolve => {
+    // Escape closes the dialog without touching the buttons, so resolve there
+    // too or publish() would wait for a promise that never settles.
+    dialog.onclose = () => resolve(false);
+    dialog.onclick = event => {
+      const button = event.target.closest('[data-token]');
+      if (!button) return;
+      if (button.dataset.token === 'cancel') { dialog.close(); return; }
+
+      const value = dialog.querySelector('[data-field="token"]').value.trim();
+      if (!value) {
+        const box = dialog.querySelector('[data-role="error"]');
+        box.textContent = 'Paste a token, or cancel.';
+        box.hidden = false;
+        return;
+      }
+      writeToken(value);
+      resolve(true);
+      dialog.close();
+    };
+    dialog.showModal();
+    dialog.querySelector('[data-field="token"]').focus();
+  });
+}
+
+// Publishing writes the file the whole site reads, so a broken card must not
+// get that far — the page would render a dead link and npm run validate would
+// start failing in the repo.
+function firstProblem(projects) {
+  for (const project of projects) {
+    if (!project.title) return `${project.id} has no title.`;
+    if (!project.url) return `“${project.title}” has no link.`;
+    if (!project.hidden && !project.image) return `“${project.title}” is visible but has no image. Add one, or hide it.`;
+  }
+  return null;
 }
 
 async function publish() {
-  if (!readToken() && !askForToken()) return;
+  const projects = catalog.get();
+
+  const problem = firstProblem(projects);
+  if (problem) {
+    document.querySelector('#admin-state').textContent = problem;
+    return;
+  }
+
+  if (!readToken() && !(await askForToken())) return;
 
   const button = document.querySelector('#admin-publish');
-  const projects = catalog.get();
   const hidden = projects.filter(project => project.hidden).length;
 
   button.disabled = true;
@@ -309,11 +396,13 @@ async function publish() {
     markDirty(false);
     toast('Published. GitHub Pages usually redeploys within a minute.');
   } catch (error) {
-    const message = error?.message || 'The commit failed.';
-    document.querySelector('#admin-state').textContent = message;
     button.disabled = false;
-    // A rejected token is worth forgetting so the next publish re-prompts.
-    if (message.includes('rejected the token')) clearToken();
+    if (error?.tokenProblem) {
+      clearToken();
+      document.querySelector('#admin-state').textContent = `${error.message} Publish again to enter another token.`;
+    } else {
+      document.querySelector('#admin-state').textContent = error?.message || 'The commit failed.';
+    }
   }
 }
 

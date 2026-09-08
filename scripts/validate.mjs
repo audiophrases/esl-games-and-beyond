@@ -13,9 +13,11 @@ for (const project of projects) {
   if (ids.has(project.id)) errors.push(`Duplicate project id: ${project.id}`);
   ids.add(project.id);
 
-  for (const key of ['id', 'title', 'blurb', 'url', 'image']) {
+  for (const key of ['id', 'title', 'blurb', 'url']) {
     if (!project[key]) errors.push(`${project.id || '(unknown)'} is missing ${key}`);
   }
+  // A card being prepared may not have a cover yet; a published one must.
+  if (!project.hidden && !project.image) errors.push(`${project.id} is visible but has no image`);
   if (typeof project.hidden !== 'boolean') errors.push(`${project.id} needs a true/false hidden flag`);
   if (project.blurb && project.blurb.length > 160) errors.push(`${project.id} blurb is ${project.blurb.length} characters`);
 
@@ -24,7 +26,7 @@ for (const project of projects) {
   }
 
   try { new URL(project.url); } catch { errors.push(`${project.id} has an invalid url`); }
-  if (!/^https?:\/\//.test(project.image)) {
+  if (project.image && !/^https?:\/\//.test(project.image)) {
     try { await access(project.image); } catch { errors.push(`${project.id} image does not exist: ${project.image}`); }
   }
 }
