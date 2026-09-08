@@ -53,7 +53,7 @@
     "blurb": "Listen to a customer's order, find or prepare the items, and hand them over.",
     "url": "https://audiophrases.github.io/babblebazaar/",
     "image": "assets/covers/babble-bazaar.webp",
-    "hidden": false
+    "hidden": true
   },
   {
     "id": "snakes-ladders",
@@ -109,7 +109,7 @@
     "blurb": "The class portal for 3rd and 4th ESO. An authorised school Google account is required.",
     "url": "https://audiophrases.github.io/English-Hub/",
     "image": "assets/covers/english-hub.webp",
-    "hidden": false
+    "hidden": true
   },
   {
     "id": "wordmine",
