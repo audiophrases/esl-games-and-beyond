@@ -40,9 +40,11 @@ The first publish asks for a token and keeps it in `sessionStorage` for that tab
 - Permissions → Repository permissions → Contents → Read and write
 - A short expiry; mint another when it lapses.
 
-### One-time Google setup
+### Google origins
 
-The sign-in reuses the OAuth client shared with PinPlay and English Hub, so `https://audiophrases.github.io` must be listed under **Authorised JavaScript origins** for the web client ending `...8aacskg99idu0uqnbr181id33gf8fet4` in the [Google Cloud console](https://console.cloud.google.com/apis/credentials). Add `http://127.0.0.1:8080` too if you want to test admin mode locally. Add — do not replace — the origins already there.
+The sign-in reuses the OAuth client shared with PinPlay and English Hub, and `https://audiophrases.github.io` is already an authorised JavaScript origin on it, so the live site needs no console work.
+
+To use admin mode on `npm run serve`, add `http://127.0.0.1:8080` under **Authorised JavaScript origins** for the web client ending `...8aacskg99idu0uqnbr181id33gf8fet4` in the [Google Cloud console](https://console.cloud.google.com/apis/credentials). Add — do not replace — the origins already there, or you will break PinPlay and English Hub.
 
 The sign-in check runs in the browser, so it is a courtesy lock that keeps admin controls away from students, not real security. The catalog is public anyway; the GitHub token is what actually gates publishing.
 
