@@ -70,26 +70,25 @@ footer { width: min(1180px, calc(100% - 3rem)); margin-inline: auto; }
 
 .card { position: relative; }
 
-/* The whole tile grows out of the grid and lifts over its neighbours. Only
-   where there is a real pointer: on a phone the grid is one column wide, so a
-   card 30% bigger than the viewport would push the page sideways. And not in
-   admin mode, where a card swelling under the cursor would move the Edit and
-   Hide buttons out from under it. */
+/* Only the cover image pops out, not the title and blurb beneath it. The card
+   itself just lifts its z-index so the grown image paints over neighbours.
+   Only where there is a real pointer: on a phone the grid is one column wide,
+   so a cover 30% wider than the viewport would push the page sideways. And not
+   in admin mode, where a cover swelling under the cursor would move the Edit
+   and Hide buttons out from under it.
+   Using :focus-visible (not :focus-within) for the keyboard path means a drag
+   that leaves the link focused but not focus-visible will not get stuck. */
 @media (hover: hover) and (pointer: fine) {
-  body:not(.admin-on) .card {
-    transition: transform .22s ease;
+  body:not(.admin-on) .card-image {
+    transition: transform .22s ease, box-shadow .22s ease;
   }
   body:not(.admin-on) .card:hover,
-  body:not(.admin-on) .card:focus-within {
-    transform: scale(1.3);
+  body:not(.admin-on) .card:has(.card-link:focus-visible) {
     z-index: 5;
-    /* Opaque, or the grown card's own words land on top of its neighbours'. */
-    background: var(--paper);
-    border-radius: var(--radius);
-    box-shadow: 0 0 0 .5rem var(--paper);
   }
   body:not(.admin-on) .card:hover .card-image,
-  body:not(.admin-on) .card:focus-within .card-image {
+  body:not(.admin-on) .card:has(.card-link:focus-visible) .card-image {
+    transform: scale(1.3);
     box-shadow: 0 16px 34px rgba(35, 33, 29, .22);
   }
 }
@@ -260,7 +259,7 @@ dialog button.danger { background: #b3261e; border-color: #b3261e; }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .card { transition: none; }
-  body:not(.admin-on) .card:hover,
-  body:not(.admin-on) .card:focus-within { transform: none; }
+  .card-image { transition: none; }
+  body:not(.admin-on) .card:hover .card-image,
+  body:not(.admin-on) .card:has(.card-link:focus-visible) .card-image { transform: none; }
 }
