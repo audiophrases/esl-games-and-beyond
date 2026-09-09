@@ -96,6 +96,14 @@
     "hidden": false
   },
   {
+    "id": "diary",
+    "title": "Diary",
+    "blurb": "Keep a diary like Whatsapp with texts, voice, picture and emojis and you can invite people too.",
+    "url": "https://audiophrases.github.io/esl-games-and-beyond/diary/",
+    "image": "assets/covers/diary.webp",
+    "hidden": false
+  },
+  {
     "id": "pinplay",
     "title": "PinPlay",
     "blurb": "Join a live class quiz with a PIN, or work through an assignment your teacher shared.",
@@ -126,13 +134,5 @@
     "url": "https://github.com/audiophrases/go2town",
     "image": "assets/covers/go2town.webp",
     "hidden": true
-  },
-  {
-    "id": "diary",
-    "title": "Diary",
-    "blurb": "Keep a diary the way you text: write it, say it, or photograph it. It stays on your device, and you can invite someone to keep one too.",
-    "url": "https://audiophrases.github.io/esl-games-and-beyond/diary/",
-    "image": "assets/covers/diary.webp",
-    "hidden": false
   }
 ]
