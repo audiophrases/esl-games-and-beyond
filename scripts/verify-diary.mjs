@@ -144,7 +144,10 @@ check('the photo survives too', await page.locator('.bubble.media img').count() 
 check('the voice note survives too', await page.locator('.voice').count() === 1);
 
 console.log('\naccepting an invite');
-const guest = await context.newPage();
+// A separate context, because an invited person is a different device — the
+// same one would share this browser's storage and add a diary here.
+const guestContext = await browser.newContext({ viewport: { width: 420, height: 860 } });
+const guest = await guestContext.newPage();
 guest.on('pageerror', e => errors.push('guest: ' + e.message));
 await guest.goto(link, { waitUntil: 'networkidle' });
 await guest.waitForSelector('#join-sheet[open]', { timeout: 6000 });
@@ -155,6 +158,67 @@ check('accepting creates that diary', (await guest.locator('#chat-name').textCon
 check('with the sender\'s prompt', (await guest.locator('.msg.in').count()) >= 1);
 await guest.screenshot({ path: `${out}/diary-invite.png` });
 await guest.close();
+await guestContext.close();
+
+console.log('\nkeeping more than one diary');
+await page.click('[data-act="back"]');
+await page.waitForSelector('#list-screen.is-active');
+await page.click('#new-diary');
+await page.waitForSelector('#new-sheet[open]');
+await page.fill('#new-name', 'Weekend notes');
+await page.fill('#new-prompt', 'What did you do that was not school?');
+await page.click('[data-avatar="🎒"]');
+check('the icon choice marks itself', await page.locator('#new-avatar [data-avatar="🎒"][aria-pressed="true"]').count() === 1);
+await page.click('[data-act="new-create"]');
+await page.waitForSelector('#chat-screen.is-active');
+check('creating opens the new diary', (await page.locator('#chat-name').textContent()) === 'Weekend notes');
+check('and it opens on its own prompt', (await page.locator('.msg.in .bubble p').first().textContent()) === 'What did you do that was not school?');
+
+await page.click('[data-act="back"]');
+await page.waitForSelector('#list-screen.is-active');
+check('both diaries are listed', await page.locator('.chat-row').count() === 2);
+
+console.log('\nsearching the list');
+await page.click('[data-act="list-search"]');
+await page.fill('#list-search-input', 'weekend');
+await page.waitForTimeout(200);
+check('the list narrows', await page.locator('.chat-row').count() === 1);
+await page.click('[data-act="list-search"]');
+await page.waitForTimeout(200);
+check('closing search restores the list', await page.locator('.chat-row').count() === 2);
+
+console.log('\ndeleting an entry');
+await page.click('.chat-row:has-text("My English diary")');
+await page.waitForSelector('#chat-screen.is-active');
+const beforeDelete = await page.locator('.msg').count();
+await page.locator('.msg.out').first().click({ button: 'right' });
+await page.click('[data-menu="delete-entry"]');
+await page.waitForTimeout(250);
+check('the entry goes', await page.locator('.msg').count() === beforeDelete - 1);
+
+console.log('\nexporting');
+const download = page.waitForEvent('download', { timeout: 5000 }).catch(() => null);
+await page.click('[data-act="chat-menu"]');
+await page.click('[data-menu="export"]');
+const file = await download;
+check('export offers a text file', !!file && /\.md$/.test(file.suggestedFilename()), file ? file.suggestedFilename() : 'no download');
+
+console.log('\ndeleting a diary');
+await page.click('[data-act="chat-menu"]');
+page.once('dialog', d => d.accept());
+await page.click('[data-menu="delete-diary"]');
+await page.waitForSelector('#list-screen.is-active');
+await page.waitForTimeout(300);
+check('the diary is gone from the list', await page.locator('.chat-row').count() === 1);
+
+await page.click('.chat-row');
+await page.waitForSelector('#chat-screen.is-active');
+await page.click('[data-act="chat-menu"]');
+page.once('dialog', d => d.accept());
+await page.click('[data-menu="delete-diary"]');
+await page.waitForSelector('#list-screen.is-active');
+await page.waitForTimeout(300);
+check('deleting the last one leaves an empty state', !(await page.locator('#list-empty').isHidden()));
 
 await browser.close();
 

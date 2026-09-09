@@ -289,7 +289,8 @@ async function ensureDailyPrompt() {
     : PROMPTS[seed % PROMPTS.length];
 
   const entry = { id: uid(), diaryId: state.current.id, side: 'in', kind: 'text', text, createdAt: Date.now() };
-  await putEntry(entry);
+  // Worth showing even if it cannot be stored — it is only a question.
+  try { await putEntry(entry); } catch { /* not fatal */ }
   state.entries.push(entry);
 }
 
@@ -324,7 +325,15 @@ function closeChat() {
 
 async function addEntry(fields) {
   const entry = { id: uid(), diaryId: state.current.id, side: 'out', createdAt: Date.now(), ...fields };
-  await putEntry(entry);
+  try {
+    await putEntry(entry);
+  } catch (error) {
+    // A device out of room would otherwise appear to swallow the entry.
+    toast(error?.name === 'QuotaExceededError'
+      ? 'This device has no room left. Delete a photo or two.'
+      : 'That could not be saved.');
+    return;
+  }
   state.entries.push(entry);
   renderChat();
 }
