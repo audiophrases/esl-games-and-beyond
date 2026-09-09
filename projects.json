@@ -58,7 +58,7 @@
   {
     "id": "vocab",
     "title": "Vocab",
-    "blurb": "Look up an English word and hear it, with the Catalan word beside it, a plain-English meaning, examples and synonyms.",
+    "blurb": "Look up in English or Catalan and get a lot back.",
     "url": "https://audiophrases.github.io/vocab/",
     "image": "assets/covers/vocab.webp",
     "hidden": false
