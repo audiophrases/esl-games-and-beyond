@@ -9,10 +9,17 @@ const types = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=
 const server = http.createServer(async (request, response) => {
   try {
     const url = new URL(request.url, 'http://localhost');
-    const relative = decodeURIComponent(url.pathname === '/' ? '/index.html' : url.pathname);
-    const file = path.resolve(root, `.${relative}`);
+    const relative = decodeURIComponent(url.pathname);
+    let file = path.resolve(root, `.${relative}`);
     if (!file.startsWith(root)) throw new Error('Invalid path');
-    const info = await stat(file);
+
+    // Serve a directory's index.html the way GitHub Pages does, so /diary/
+    // works here exactly as it will once deployed.
+    let info = await stat(file);
+    if (info.isDirectory()) {
+      file = path.join(file, 'index.html');
+      info = await stat(file);
+    }
     if (!info.isFile()) throw new Error('Not a file');
     response.writeHead(200, { 'Content-Type': types[path.extname(file)] || 'application/octet-stream', 'Cache-Control': 'no-store' });
     response.end(await readFile(file));

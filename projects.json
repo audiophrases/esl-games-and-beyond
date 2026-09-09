@@ -126,5 +126,13 @@
     "url": "https://github.com/audiophrases/go2town",
     "image": "assets/covers/go2town.webp",
     "hidden": true
+  },
+  {
+    "id": "diary",
+    "title": "Diary",
+    "blurb": "Keep a diary the way you text: write it, say it, or photograph it. It stays on your device, and you can invite someone to keep one too.",
+    "url": "https://audiophrases.github.io/esl-games-and-beyond/diary/",
+    "image": "assets/covers/diary.webp",
+    "hidden": false
   }
 ]

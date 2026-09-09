@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="A private diary that works like a chat: write, speak, and add photos, one day at a time.">
+  <meta name="theme-color" content="#f0f2f5">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext y='52' font-size='52'%3E%F0%9F%93%94%3C/text%3E%3C/svg%3E">
+  <title>Diary</title>
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+
+<svg class="sprite" aria-hidden="true">
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M20 12H4m6-7-7 7 7 7"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4.5-4.5"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="19" r="1.6" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-smiley" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5a4.5 4.5 0 0 0 7 0"/><circle cx="9" cy="10" r="1.1" fill="currentColor" stroke="none"/><circle cx="15" cy="10" r="1.1" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-clip" viewBox="0 0 24 24"><path d="M20 11.5 12 19.5a5 5 0 0 1-7-7l8-8a3.4 3.4 0 0 1 4.8 4.8l-8 8a1.8 1.8 0 0 1-2.5-2.5l7.3-7.3"/></symbol>
+  <symbol id="i-camera" viewBox="0 0 24 24"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z"/><circle cx="12" cy="13" r="3.4"/></symbol>
+  <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="M3.4 20.4 21 12 3.4 3.6 3.4 10l12 2-12 2z" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><path d="M8 5h3v14H8zM13 5h3v14h-3z" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-ticks" viewBox="0 0 18 12"><path d="m1 6.5 3 3 6.5-7.5M7.5 9.5l1 1 6.5-7.5"/></symbol>
+  <symbol id="i-pencil" viewBox="0 0 24 24"><path d="M4 20h4L20 8a2.8 2.8 0 0 0-4-4L4 16v4Z"/></symbol>
+  <symbol id="i-bin" viewBox="0 0 24 24"><path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-people" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.4"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M16 5.2a3.4 3.4 0 0 1 0 6.6M17 20a6 6 0 0 0-2-4.5"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a1 1 0 0 1 1-1h9"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11m-4.5-4L12 15.5 16.5 11M5 20h14"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8.2 8.2 0 0 1 9.5 4 8.3 8.3 0 1 0 20 14.5Z"/></symbol>
+</svg>
+
+<!-- ── the list of diaries ───────────────────────────────────────────────── -->
+<section id="list-screen" class="screen is-active">
+  <header class="bar">
+    <h1 class="bar-title">Diary</h1>
+    <div class="bar-actions">
+      <button type="button" class="icon-btn" data-act="list-search" aria-label="Search diaries"><svg><use href="#i-search"/></svg></button>
+      <button type="button" class="icon-btn" data-act="list-menu" aria-label="More options" aria-haspopup="true"><svg><use href="#i-menu"/></svg></button>
+    </div>
+  </header>
+
+  <div class="search-row" id="list-search-row" hidden>
+    <label class="visually-hidden" for="list-search-input">Search diaries</label>
+    <input type="search" id="list-search-input" placeholder="Search diaries">
+  </div>
+
+  <ul class="chat-list" id="diary-list"></ul>
+
+  <p class="empty-note" id="list-empty" hidden>
+    No diaries yet.<br>Tap the pencil to start one.
+  </p>
+
+  <button type="button" class="fab" id="new-diary" aria-label="New diary"><svg><use href="#i-pencil"/></svg></button>
+</section>
+
+<!-- ── one diary, as a conversation ──────────────────────────────────────── -->
+<section id="chat-screen" class="screen">
+  <header class="bar chat-bar">
+    <button type="button" class="icon-btn" data-act="back" aria-label="Back to diaries"><svg><use href="#i-back"/></svg></button>
+    <span class="avatar" id="chat-avatar" aria-hidden="true"></span>
+    <div class="chat-heading">
+      <strong id="chat-name"></strong>
+      <small id="chat-sub"></small>
+    </div>
+    <div class="bar-actions">
+      <button type="button" class="icon-btn" data-act="chat-search" aria-label="Search this diary"><svg><use href="#i-search"/></svg></button>
+      <button type="button" class="icon-btn" data-act="chat-menu" aria-label="More options" aria-haspopup="true"><svg><use href="#i-menu"/></svg></button>
+    </div>
+  </header>
+
+  <div class="search-row" id="chat-search-row" hidden>
+    <label class="visually-hidden" for="chat-search-input">Search this diary</label>
+    <input type="search" id="chat-search-input" placeholder="Search this diary">
+  </div>
+
+  <div class="messages" id="messages" role="log" aria-live="polite" aria-label="Diary entries"></div>
+
+  <div class="emoji-panel" id="emoji-panel" hidden></div>
+
+  <footer class="composer" id="composer">
+    <div class="input-shell">
+      <button type="button" class="icon-btn" data-act="emoji" aria-label="Emoji"><svg><use href="#i-smiley"/></svg></button>
+      <label class="visually-hidden" for="text-input">Write an entry</label>
+      <textarea id="text-input" rows="1" placeholder="Write something…" enterkeyhint="send"></textarea>
+      <button type="button" class="icon-btn" data-act="attach" aria-label="Add a picture"><svg><use href="#i-clip"/></svg></button>
+      <button type="button" class="icon-btn camera-btn" data-act="camera" aria-label="Take a photo"><svg><use href="#i-camera"/></svg></button>
+    </div>
+    <button type="button" class="round-btn" id="mic-send" aria-label="Hold to record a voice note">
+      <svg class="ic-mic"><use href="#i-mic"/></svg>
+      <svg class="ic-send"><use href="#i-send"/></svg>
+    </button>
+  </footer>
+
+  <div class="recording" id="recording" hidden>
+    <button type="button" class="icon-btn danger" data-act="rec-cancel" aria-label="Cancel recording"><svg><use href="#i-bin"/></svg></button>
+    <span class="rec-dot" aria-hidden="true"></span>
+    <span class="rec-time" id="rec-time">0:00</span>
+    <span class="rec-hint" id="rec-hint">Slide left to cancel</span>
+    <button type="button" class="round-btn" data-act="rec-send" aria-label="Send voice note"><svg><use href="#i-send"/></svg></button>
+  </div>
+
+  <input type="file" id="file-input" accept="image/*" hidden>
+  <input type="file" id="camera-input" accept="image/*" capture="environment" hidden>
+</section>
+
+<!-- ── overlays ──────────────────────────────────────────────────────────── -->
+<div class="sheet-backdrop" id="backdrop" hidden></div>
+
+<div class="menu" id="menu" hidden role="menu"></div>
+
+<dialog class="sheet" id="new-sheet" aria-labelledby="new-sheet-title">
+  <h2 id="new-sheet-title">New diary</h2>
+  <label class="field"><span>Name</span><input type="text" id="new-name" placeholder="My English diary" maxlength="40"></label>
+  <label class="field"><span>What is it for?</span><input type="text" id="new-prompt" placeholder="One honest sentence a day" maxlength="90"></label>
+  <div class="field">
+    <span>Icon</span>
+    <div class="emoji-choice" id="new-avatar"></div>
+  </div>
+  <div class="sheet-actions">
+    <button type="button" class="text-btn" data-act="new-cancel">Cancel</button>
+    <button type="button" class="cta" data-act="new-create">Create</button>
+  </div>
+</dialog>
+
+<dialog class="sheet" id="invite-sheet" aria-labelledby="invite-title">
+  <h2 id="invite-title">Invite someone</h2>
+  <p class="sheet-note">This shares the <strong>idea</strong> of the diary — its name and prompt — so someone can keep their own. Your entries stay on your device and are never sent.</p>
+  <label class="field"><span>From</span><input type="text" id="invite-from" placeholder="Your name" maxlength="30"></label>
+  <label class="field"><span>Link</span><input type="text" id="invite-link" readonly></label>
+  <div class="sheet-actions">
+    <button type="button" class="text-btn" data-act="invite-close">Close</button>
+    <button type="button" class="cta" data-act="invite-share"><svg class="cta-ic"><use href="#i-copy"/></svg><span id="invite-share-label">Copy link</span></button>
+  </div>
+</dialog>
+
+<dialog class="sheet" id="join-sheet" aria-labelledby="join-title">
+  <span class="join-avatar" id="join-avatar" aria-hidden="true"></span>
+  <h2 id="join-title">You are invited</h2>
+  <p class="join-line" id="join-line"></p>
+  <p class="join-prompt" id="join-prompt"></p>
+  <div class="sheet-actions">
+    <button type="button" class="text-btn" data-act="join-no">Not now</button>
+    <button type="button" class="cta" data-act="join-yes">Start writing</button>
+  </div>
+</dialog>
+
+<div class="lightbox" id="lightbox" hidden>
+  <button type="button" class="icon-btn light" data-act="close-light" aria-label="Close photo"><svg><use href="#i-close"/></svg></button>
+  <img id="lightbox-img" alt="">
+  <p id="lightbox-caption"></p>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+
+<noscript><p style="padding:2rem;font:16px system-ui">Diary needs JavaScript to run.</p></noscript>
+</body>
+</html>

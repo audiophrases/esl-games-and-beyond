@@ -21,6 +21,14 @@ Which activities are hidden changes as you work — admin mode decides it, and t
 
 The longer notes about what each activity needs before you start live in [`docs/project-inventory.md`](docs/project-inventory.md) rather than on the cards.
 
+## Diary
+
+Every other card points at its own repository. [`diary/`](diary/) is the exception: a small app that lives here and is served from the same site at `/esl-games-and-beyond/diary/`. It is self-contained — three files, no build, no dependencies — so it can be lifted into its own repository later by moving the folder and changing one URL in `projects.json`.
+
+It is a journal shaped like a messenger: the familiar chat layout, because it is a pleasant thing to write into. Entries can be typed, spoken as a voice note, or photographed, and the diary opens each day with a prompt so there is something to answer. Everything is held in the browser (IndexedDB) and never uploaded, which is why an invite can only carry a diary's name and prompt — enough for a class to keep the same journal, never anyone's entries.
+
+The look borrows the conventions of a chat app; it carries no one else's name, logo or branding.
+
 ## Admin mode
 
 Three Google accounts can edit the catalog from the site itself — `eugenimonfort@iecomaruga.cat`, `eugenime@gmail.com`, and `emonfor3@xtec.cat`. This works the same way as English Hub: [`auth.js`](auth.js) checks the account, [`admin.js`](admin.js) commits the change.
@@ -67,9 +75,10 @@ Open <http://127.0.0.1:8080>. The site has no build step and no runtime dependen
 ```bash
 npm run validate
 npm test
-npm run serve          # the two browser checks need the site running
+npm run serve          # the browser checks need the site running
 npm run test:browser
 npm run test:admin
+npm run test:diary
 ```
 
 `npm run validate` checks the schema of every card, the URLs, the local cover files, and the landmarks the page needs. The unit tests check size, uniqueness, blurb length, the admin allow-list, and that no token was ever committed.
@@ -77,6 +86,8 @@ npm run test:admin
 `npm run test:browser` drives the visitor's page in Microsoft Edge: desktop and phone layouts, and that hidden activities never reach the markup a visitor receives.
 
 `npm run test:admin` drives admin mode against a **mocked** GitHub API — it never reaches github.com and needs no token. It covers editing, hiding, showing, reordering, adding, cancelling an add, the refusal to publish a broken card, the contents of the commit itself, and leaving admin mode and coming back without signing out. It also walks the three ways publishing fails: a token GitHub rejects, a token for the wrong repository (which fails before any commit is attempted), and a conflict with someone else's publish — the one refusal that keeps your token rather than forgetting it.
+
+`npm run test:diary` drives Diary, the one app that lives in this repository rather than its own (see above), through all four of its input methods, plus reactions, search, an invite link and surviving a reload.
 
 ## Refresh the preview images
 

@@ -10,7 +10,8 @@
     "test": "node --test tests/*.test.mjs",
     "test:browser": "node scripts/verify-browser.mjs",
     "screenshots": "node scripts/capture-thumbnails.mjs",
-    "test:admin": "node scripts/verify-admin.mjs"
+    "test:admin": "node scripts/verify-admin.mjs",
+    "test:diary": "node scripts/verify-diary.mjs"
   },
   "devDependencies": {
     "playwright-core": "^1.55.0"
