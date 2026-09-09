@@ -56,6 +56,14 @@
     "hidden": false
   },
   {
+    "id": "vocab",
+    "title": "Vocab",
+    "blurb": "Look up an English word and hear it, with the Catalan word beside it, a plain-English meaning, examples and synonyms.",
+    "url": "https://audiophrases.github.io/vocab/",
+    "image": "assets/covers/vocab.webp",
+    "hidden": false
+  },
+  {
     "id": "grammar-studio",
     "title": "ESL Grammar Studio",
     "blurb": "Browse grammar points by level, read a plain explanation, and try focused practice.",
