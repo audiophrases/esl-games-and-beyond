@@ -61,7 +61,7 @@
     "blurb": "Look up in English or Catalan and get a lot back.",
     "url": "https://audiophrases.github.io/vocab/",
     "image": "assets/covers/vocab.webp",
-    "hidden": false
+    "hidden": true
   },
   {
     "id": "grammar-studio",
