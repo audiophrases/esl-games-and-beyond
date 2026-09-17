@@ -47,7 +47,9 @@ function adminIsSignedIn() {
 
 function adminSignOut() {
     try { sessionStorage.removeItem(ADMIN_AUTH_KEY); } catch (e) {}
-    try { sessionStorage.removeItem('eslGithubToken'); } catch (e) {}
+    // The GitHub token lives in localStorage so it outlasts the tab; signing
+    // out is the one thing that clears it.
+    try { localStorage.removeItem('eslGithubToken'); } catch (e) {}
     if (window.google && google.accounts && google.accounts.id) {
         google.accounts.id.disableAutoSelect();
     }

@@ -14,7 +14,8 @@ const baseUrl = process.env.BASE_URL || 'http://127.0.0.1:8080/';
 const catalog = await fetch(new URL('projects.json', baseUrl)).then(r => r.json());
 
 const browser = await chromium.launch({ executablePath: edge, headless: true });
-const page = await browser.newPage({ viewport: { width: 1440, height: 1000 }, reducedMotion: 'reduce' });
+const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, reducedMotion: 'reduce' });
+const page = await context.newPage();
 
 const failures = [];
 const errors = [];
@@ -181,7 +182,7 @@ await page.locator('#token-dialog [data-token="save"]').click();
 await page.waitForFunction(() => document.querySelector('#admin-state').textContent.includes('Publish again'));
 check('the refusal is explained', (await state()).includes('Contents: Read and write'));
 check('and it says how to recover', (await state()).includes('Publish again to enter another token'));
-check('the refused token is forgotten', await page.evaluate(() => sessionStorage.getItem('eslGithubToken')) === null);
+check('the refused token is forgotten', await page.evaluate(() => localStorage.getItem('eslGithubToken')) === null);
 check('the changes are still unpublished', !(await publishDisabled()));
 
 /* --- a token for the wrong repository ------------------------------------- */
@@ -198,7 +199,7 @@ await page.locator('#token-dialog [data-token="save"]').click();
 await page.waitForFunction(() => document.querySelector('#admin-state').textContent.includes('Publish again'));
 check('the wrong repository is named', (await state()).includes('cannot see audiophrases/esl-games-and-beyond'));
 check('it never tried to commit', putCount === 0, `saw ${putCount}`);
-check('that token is forgotten too', await page.evaluate(() => sessionStorage.getItem('eslGithubToken')) === null);
+check('that token is forgotten too', await page.evaluate(() => localStorage.getItem('eslGithubToken')) === null);
 
 /* --- a token GitHub accepts ----------------------------------------------- */
 
@@ -239,6 +240,39 @@ check('a second publish does not ask for the token again', !(await page.locator(
 check('the second commit was sent', putCount === 2, `saw ${putCount}`);
 check('the second commit carries the newly hidden card', JSON.parse(Buffer.from(putBody.content, 'base64').toString('utf8')).find(p => p.id === firstVisible)?.hidden === true);
 
+/* --- the token outlives the tab ------------------------------------------- */
+
+// The point of keeping it in localStorage: a fresh tab in the same browser
+// must publish without asking again. Sign out, and only sign out, forgets it.
+console.log('\nthe token outlives the tab');
+const tab = await context.newPage();
+tab.on('pageerror', error => errors.push(error.message));
+await tab.route('https://api.github.com/**', route => {
+  const method = route.request().method();
+  if (method === 'OPTIONS') return route.fulfill({ status: 204, headers: cors });
+  return route.fulfill({
+    status: 200, headers: { ...cors, 'content-type': 'application/json' },
+    body: JSON.stringify(method === 'GET' ? { sha: 'fakesha123' } : { commit: { sha: 'abc' } })
+  });
+});
+await tab.addInitScript(() => sessionStorage.setItem('eslAdminEmail', 'eugenime@gmail.com'));
+await tab.goto(baseUrl, { waitUntil: 'networkidle' });
+await tab.waitForSelector('.admin-bar');
+check('a new tab still has the token', await tab.evaluate(() => localStorage.getItem('eslGithubToken')) === 'github_pat_goodone');
+await tab.locator(`.card[data-id="${firstVisible}"] [data-admin="toggle"]`).click();
+await tab.locator('#admin-publish').click();
+await tab.waitForSelector('.toast', { timeout: 5000 });
+check('and publishes from it without asking', !(await tab.locator('#token-dialog').count()) || !(await tab.locator('#token-dialog').evaluate(node => node.open)));
+
+tab.once('dialog', dialog => dialog.accept());
+await tab.locator('#admin-signout').click();
+await tab.waitForLoadState('networkidle');
+check('signing out forgets the token', await tab.evaluate(() => localStorage.getItem('eslGithubToken')) === null);
+await tab.close();
+// The main page has lost its token to that sign-out, as it should: put one
+// back so the rest of the run is unaffected.
+await page.evaluate(() => localStorage.setItem('eslGithubToken', 'github_pat_goodone'));
+
 /* --- someone else published first ----------------------------------------- */
 
 // A conflict is the one refusal that is not the token's fault, so the token
@@ -251,7 +285,7 @@ await page.locator(`.card[data-id="${firstVisible}"] [data-admin="toggle"]`).cli
 await page.locator('#admin-publish').click();
 await page.waitForFunction(() => document.querySelector('#admin-state').textContent.includes('changed the catalog first'));
 check('a conflict says to reload', (await state()).includes('Reload the page'));
-check('the token is kept, it was not at fault', await page.evaluate(() => sessionStorage.getItem('eslGithubToken')) !== null);
+check('the token is kept, it was not at fault', await page.evaluate(() => localStorage.getItem('eslGithubToken')) !== null);
 check('it does not offer another token', await page.locator('#token-dialog').count() === 0 || !(await page.locator('#token-dialog').evaluate(node => node.open)));
 check('the changes survive the conflict', !(await publishDisabled()));
 

@@ -9,8 +9,10 @@
    THE TOKEN
    ---------
    Publishing needs a GitHub token. This asks for one the first time you
-   publish and keeps it in sessionStorage — it is gone when the tab closes and
-   it is never written into the page or the repo. Make one at
+   publish on a given browser and keeps it in localStorage, so it is typed
+   once per device rather than once per tab. Sign out forgets it. It is never
+   written into the page or the repo — it cannot be: GitHub's secret scanning
+   revokes a token the moment it appears in a public commit. Make one at
    https://github.com/settings/personal-access-tokens/new
 
      - Repository access -> Only select repositories -> esl-games-and-beyond
@@ -35,9 +37,13 @@ let pendingNew = null;   // a just-added card, dropped again if the editor is ca
 
 /* --- token ---------------------------------------------------------------- */
 
-const readToken = () => { try { return sessionStorage.getItem(GH_TOKEN_KEY); } catch { return null; } };
-const writeToken = value => { try { sessionStorage.setItem(GH_TOKEN_KEY, value); } catch {} };
-const clearToken = () => { try { sessionStorage.removeItem(GH_TOKEN_KEY); } catch {} };
+// localStorage, so the token survives the tab and is typed once per browser
+// rather than once per visit. It is still never written into the page or the
+// repo — it cannot be: GitHub's secret scanning revokes a token the moment it
+// appears in a public commit. Sign out forgets it.
+const readToken = () => { try { return localStorage.getItem(GH_TOKEN_KEY); } catch { return null; } };
+const writeToken = value => { try { localStorage.setItem(GH_TOKEN_KEY, value); } catch {} };
+const clearToken = () => { try { localStorage.removeItem(GH_TOKEN_KEY); } catch {} };
 
 /* --- GitHub Contents API -------------------------------------------------- */
 
@@ -325,8 +331,8 @@ function askForToken() {
   dialog.innerHTML = `
     <h2 id="token-title">A GitHub token is needed to publish</h2>
     <p>Create a fine-grained token with <strong>Contents: Read and write</strong> on
-    <strong>${GH_REPO.split('/')[1]}</strong> only, then paste it here. It stays in this tab
-    for this session and is never saved to the site.
+    <strong>${GH_REPO.split('/')[1]}</strong> only, then paste it here. It stays on this device
+    until you sign out, and is never saved to the site.
     <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noreferrer">Create one</a>.</p>
     <label class="admin-field">
       <span>Token</span>

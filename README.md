@@ -45,13 +45,17 @@ Publishing refuses to commit a card with no title or link, or a *visible* card w
 
 ### The GitHub token
 
-The first publish asks for a token and keeps it in `sessionStorage` for that tab only — it is never written into the page or the repo. Create a fine-grained token at [github.com/settings/personal-access-tokens/new](https://github.com/settings/personal-access-tokens/new):
+The first publish on a given browser asks for a token and keeps it in that browser's `localStorage`, so you type it once per device rather than once per tab. **Sign out** forgets it; **Done** does not. Create a fine-grained token at [github.com/settings/personal-access-tokens/new](https://github.com/settings/personal-access-tokens/new):
 
 - Repository access → Only select repositories → `esl-games-and-beyond`
 - Permissions → Repository permissions → Contents → Read and write
 - A short expiry; mint another when it lapses.
 
 If GitHub refuses the token — expired, wrong scope, wrong repository — it is forgotten straight away and the next publish asks for a new one, so a bad paste never locks you out of the tab.
+
+The token cannot go into the code, and not only as a matter of taste: this is a public repository, and GitHub's secret scanning finds a personal access token in a public commit and revokes it automatically, usually within minutes. A token committed here would be dead before the page redeployed. Keeping it in the browser is the option that actually works.
+
+On a shared computer — a classroom PC, say — sign out when you are done, since the token stays in that browser until you do.
 
 ### Google origins
 
