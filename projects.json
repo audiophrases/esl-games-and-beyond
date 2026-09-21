@@ -40,6 +40,14 @@
     "hidden": false
   },
   {
+    "id": "pronunciation-coach",
+    "title": "Pronunciation Coach",
+    "blurb": "Record or upload speech, get word-by-word feedback, and compare your pronunciation with a model voice.",
+    "url": "https://audiophrases.github.io/PronunciationCoach",
+    "image": "assets/covers/pronunciation-coach.webp",
+    "hidden": false
+  },
+  {
     "id": "babble-bazaar",
     "title": "Babble Bazaar",
     "blurb": "Listen to a customer's order, find or prepare the items, and hand them over.",

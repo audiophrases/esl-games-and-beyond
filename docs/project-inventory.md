@@ -11,6 +11,7 @@ The cards themselves carry only a picture, a name, and one line. The access note
 | PinPlay | Teacher-led quiz room and assignments | A PIN or assignment link is normally required |
 | Dictation Time | Listening and writing practice | Public free-practice mode |
 | Read · Listen · Speak (`speechtoipa`) | Pronunciation and reading aloud | Public; microphone recommended |
+| Pronunciation Coach | Record or upload speech, review word-by-word feedback, and compare with a model voice | [Open coach](https://audiophrases.github.io/PronunciationCoach) |
 | Watchword | One-word-clue team game | Public; one shared device |
 | Impostor | Secret-word speaking game | Public; one shared device |
 | Snakes & Ladders | Classroom revision board game | Public; best on a large screen |

@@ -9,6 +9,20 @@ test('the catalog holds the curated set', () => {
   assert.ok(projects.filter(project => !project.hidden).length >= 10);
 });
 
+test('Pronunciation Coach is visible with its stable link and preview', async () => {
+  const coach = projects.find(project => project.id === 'pronunciation-coach');
+  assert.ok(coach, 'Pronunciation Coach must be in the catalog');
+  assert.equal(coach.title, 'Pronunciation Coach');
+  assert.equal(coach.hidden, false);
+  assert.equal(coach.url, 'https://audiophrases.github.io/PronunciationCoach');
+  assert.match(coach.blurb, /record or upload/i);
+  assert.match(coach.blurb, /word-by-word feedback/i);
+  assert.doesNotMatch(coach.blurb, /teacher must start|recordings are saved/i);
+  assert.equal(coach.image, 'assets/covers/pronunciation-coach.webp');
+  const cover = await readFile(coach.image);
+  assert.equal(cover.toString('ascii', 8, 12), 'WEBP');
+});
+
 test('ids and titles are unique', () => {
   assert.equal(new Set(projects.map(project => project.id)).size, projects.length);
   assert.equal(new Set(projects.map(project => project.title)).size, projects.length);
