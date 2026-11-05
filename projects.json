@@ -13,7 +13,7 @@
     "blurb": "Hear a clue and find one word for every letter of the alphabet before time runs out.",
     "url": "https://audiophrases.github.io/password/",
     "image": "assets/covers/password.webp",
-    "hidden": false
+    "hidden": true
   },
   {
     "id": "impostor",
