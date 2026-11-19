@@ -150,5 +150,13 @@
     "url": "https://github.com/audiophrases/go2town",
     "image": "assets/covers/go2town.webp",
     "hidden": true
+  },
+  {
+    "id": "communicator",
+    "title": "Communicator",
+    "blurb": "",
+    "url": "https://communicator-online.eugenime.workers.dev/",
+    "image": "assets/covers/communicator.webp",
+    "hidden": false
   }
 ]
